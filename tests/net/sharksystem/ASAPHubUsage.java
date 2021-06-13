@@ -49,6 +49,8 @@ public class ASAPHubUsage extends TestHelper {
 
         this.alicePeer.connectASAPHubs();
         this.bobPeer.connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
+
+        Thread.sleep(1000);
         this.alicePeer.connectASAPHub(hubDescription); // variant
 
         this.alicePeer.disconnectASAPHubs();

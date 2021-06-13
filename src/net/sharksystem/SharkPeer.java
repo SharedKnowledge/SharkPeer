@@ -6,6 +6,7 @@ import net.sharksystem.hub.HubConnectorDescription;
 import net.sharksystem.hub.HubConnectorProtocol;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -105,6 +106,10 @@ public interface SharkPeer {
      * @param hubDescription
      */
     void addASAPHub(HubConnectorDescription hubDescription);
+
+    Collection<HubConnectorDescription> getHubs();
+
+    Collection<HubConnectorDescription> getHubs(HubConnectorProtocol connectionType);
 
     /**
      * Try to connection to all hubs

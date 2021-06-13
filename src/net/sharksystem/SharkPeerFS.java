@@ -203,8 +203,12 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     //                                              hub management                                                //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private List<HubConnectorDescription> hubList = new ArrayList<>();
+    //// persist hub list
+    private void saveHubList() {
+        // implement a get / putExtra in ASAPInternalPeerFS and make it available via ASAPPeer interface.
+    }
 
+    private List<HubConnectorDescription> hubList = new ArrayList<>();
 
     @Override
     public void addASAPHub(HubConnectorDescription hubDescription) {
@@ -217,6 +221,23 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
         }
 
         this.hubList.add(hubDescription);
+
+        this.saveHubList();
+    }
+
+    public Collection<HubConnectorDescription> getHubs() {
+        return this.hubList;
+    }
+
+    public Collection<HubConnectorDescription> getHubs(HubConnectorProtocol connectionType) {
+        List<HubConnectorDescription> retList = new ArrayList<>();
+        for (HubConnectorDescription inList : this.hubList) {
+            if (inList.getHubConnectorType() == connectionType) {
+                retList.add(inList);
+            }
+        }
+
+        return retList;
     }
 
     @Override
@@ -233,6 +254,8 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
             }
             if(toRemove != null) this.hubList.remove(toRemove);
         }
+
+        this.saveHubList();
     }
 
     @Override
@@ -247,11 +270,14 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
         for (HubConnectorDescription toRemove : toRemoveList) {
             this.hubList.remove(toRemove);
         }
+
+        this.saveHubList();
     }
 
     @Override
     public void removeASAPHubs() {
         this.hubList = new ArrayList<>();
+        this.saveHubList();
     }
 
     @Override
