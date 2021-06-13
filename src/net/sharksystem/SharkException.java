@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 public class SharkException extends Exception {
     public SharkException() {

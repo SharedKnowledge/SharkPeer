@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.utils.Log;

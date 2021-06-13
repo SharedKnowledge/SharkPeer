@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

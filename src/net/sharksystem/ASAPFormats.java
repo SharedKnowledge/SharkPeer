@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

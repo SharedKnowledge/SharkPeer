@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 /**
  * Factory that produces an instance of your ASAP app which can be used as Shark application component

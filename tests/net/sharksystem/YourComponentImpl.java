@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 import net.sharksystem.asap.*;
 import net.sharksystem.asap.utils.ASAPMessages2StringCollectionWrapper;

@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 /**
  * define messages your component is going to publish to applications using your component

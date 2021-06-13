@@ -1,4 +1,4 @@
-package sharksystem;
+package net.sharksystem;
 
 public class ExampleYourComponentListener implements YourComponentListener {
     public int counterA = 0;
