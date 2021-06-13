@@ -3,14 +3,17 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.asap.ASAPPeerFS;
+import net.sharksystem.asap.EncounterConnectionType;
+import net.sharksystem.hub.*;
+import net.sharksystem.hub.peerside.HubConnector;
+import net.sharksystem.hub.peerside.NewConnectionListener;
+import net.sharksystem.hub.peerside.SharedTCPChannelConnectorPeerSide;
 import net.sharksystem.utils.Log;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class SharkPeerFS implements SharkPeer {
+public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     protected final CharSequence owner;
     protected final CharSequence rootFolder;
     private HashMap<CharSequence, SharkComponentFactory> factories = new HashMap<>();
@@ -194,5 +197,145 @@ public class SharkPeerFS implements SharkPeer {
     @Override
     public CharSequence getPeerID() throws SharkException {
         return this.getASAPPeer().getPeerID();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                              hub management                                                //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private List<HubConnectorDescription> hubList = new ArrayList<>();
+
+
+    @Override
+    public void addASAPHub(HubConnectorDescription hubDescription) {
+        // already in there?
+        for(HubConnectorDescription inList : this.hubList) {
+            if(HubConnectorAlgebra.same(inList, hubDescription)) {
+                // already in there
+                return;
+            }
+        }
+
+        this.hubList.add(hubDescription);
+    }
+
+    @Override
+    public void removeASAPHub(HubConnectorDescription hubDescription) {
+        if (!this.hubList.remove(hubDescription)) {
+            // not that object found - but maybe some that describes the same hub?
+            HubConnectorDescription toRemove = null;
+            for (HubConnectorDescription inList : this.hubList) {
+                if (HubConnectorAlgebra.same(inList, hubDescription)) {
+                    // already in there
+                    toRemove = inList; // remove while iterating produced problems sometimes
+                    break;
+                }
+            }
+            if(toRemove != null) this.hubList.remove(toRemove);
+        }
+    }
+
+    @Override
+    public void removeASAPHubs(HubConnectorProtocol connectionType) {
+        List<HubConnectorDescription> toRemoveList = new ArrayList<>();
+        for (HubConnectorDescription inList : this.hubList) {
+            if (inList.getHubConnectorType() == connectionType) {
+                toRemoveList.add(inList);
+            }
+        }
+
+        for (HubConnectorDescription toRemove : toRemoveList) {
+            this.hubList.remove(toRemove);
+        }
+    }
+
+    @Override
+    public void removeASAPHubs() {
+        this.hubList = new ArrayList<>();
+    }
+
+    @Override
+    public void connectASAPHubs() throws ASAPHubException, SharkException, IOException {
+        for (HubConnectorDescription inList : this.hubList) {
+            this.connectASAPHub(inList);
+        }
+    }
+
+    @Override
+    public void connectASAPHubs(HubConnectorProtocol connectionType) throws ASAPHubException, SharkException, IOException {
+        for (HubConnectorDescription inList : this.hubList) {
+            if (inList.getHubConnectorType() == connectionType) {
+                this.connectASAPHub(inList);
+            }
+        }
+    }
+
+    private Map<HubConnectorDescription, HubConnector> activeHubConnections = new HashMap<>();
+
+    @Override
+    public void connectASAPHub(HubConnectorDescription hubDescription)
+            throws ASAPHubException, IOException, SharkException {
+
+        switch(hubDescription.getHubConnectorType()) {
+            case TCP:
+                TCPHubConnectorDescription tcpDescription = (TCPHubConnectorDescription) hubDescription;
+                HubConnector tcpHubConnector = SharedTCPChannelConnectorPeerSide.createTCPHubConnector(
+                        tcpDescription.getHubHostName(), tcpDescription.getHubHostPort());
+                tcpHubConnector.setListener(this);
+                tcpHubConnector.connectHub(this.getPeerID());
+                this.activeHubConnections.put(hubDescription, tcpHubConnector);
+                break;
+            default: throw new SharkNotSupportedException("unsupported connection type / protocol");
+        }
+
+    }
+
+    @Override
+    public void notifyPeerConnected(StreamPair streamPair) {
+        try {
+            Log.writeLog(this, "new connection via hub... [TODO] security settings (encrypt / signing)");
+            this.asapPeer.handleConnection(
+                    streamPair.getInputStream(),
+                    streamPair.getOutputStream(), false, false, EncounterConnectionType.ASAP_HUB);
+        } catch (Exception e) {
+            Log.writeLogErr(this, e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void disconnectASAPHubs() throws ASAPHubException, IOException {
+        this.disconnectASAPHubs(this.activeHubConnections.values());
+    }
+
+    @Override
+    public void disconnectASAPHubs(HubConnectorProtocol connectionType) throws ASAPHubException, IOException {
+        List<HubConnector> activeConnections = new ArrayList<>();
+
+        for(HubConnectorDescription description : this.activeHubConnections.keySet()) {
+            if(description.getHubConnectorType() == connectionType) {
+                activeConnections.add(this.activeHubConnections.get(description));
+            }
+        }
+        this.disconnectASAPHubs(activeConnections);
+    }
+
+    @Override
+    public void disconnectASAPHub(HubConnectorDescription hubDescription) throws ASAPHubException, IOException {
+        // find matching active connection
+
+        for(HubConnectorDescription description : this.activeHubConnections.keySet()) {
+            if(HubConnectorAlgebra.same(hubDescription, description)) {
+                List<HubConnector> connectionList = new ArrayList<>();
+                connectionList.add(this.activeHubConnections.get(description));
+                this.disconnectASAPHubs(connectionList);
+                return; // just one.
+            }
+        }
+    }
+
+    private void disconnectASAPHubs(Collection<HubConnector> hubConnectorList) throws ASAPHubException, IOException {
+        for(HubConnector connector : hubConnectorList) {
+            connector.disconnectHub();
+        }
     }
 }
