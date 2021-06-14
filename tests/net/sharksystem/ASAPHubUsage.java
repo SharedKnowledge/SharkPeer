@@ -109,36 +109,36 @@ public class ASAPHubUsage extends TestHelper {
         };
 
 
-        this.alicePeer.addASAPHub(hubDescription1);
-        this.alicePeer.addASAPHub(hubDescription2);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription1);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription2);
 
-        Collection<HubConnectorDescription> hubs = this.alicePeer.getHubs();
+        Collection<HubConnectorDescription> hubs = this.alicePeer.getASAPHubManager().getHubs();
         Assert.assertEquals(2, hubs.size());
 
-        this.alicePeer.removeASAPHub(hubDescription1);
-        hubs = this.alicePeer.getHubs();
+        this.alicePeer.getASAPHubManager().removeASAPHub(hubDescription1);
+        hubs = this.alicePeer.getASAPHubManager().getHubs();
         Assert.assertEquals(1, hubs.size());
 
-        this.alicePeer.removeASAPHub(hubDescription2);
-        hubs = this.alicePeer.getHubs();
+        this.alicePeer.getASAPHubManager().removeASAPHub(hubDescription2);
+        hubs = this.alicePeer.getASAPHubManager().getHubs();
         Assert.assertEquals(0, hubs.size());
 
         // add again
-        this.alicePeer.addASAPHub(hubDescription1);
-        this.alicePeer.addASAPHub(hubDescription2);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription1);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription2);
 
         // remove all TCP
-        this.alicePeer.removeASAPHubs(HubConnectorProtocol.TCP);
-        hubs = this.alicePeer.getHubs();
+        this.alicePeer.getASAPHubManager().removeASAPHubs(HubConnectorProtocol.TCP);
+        hubs = this.alicePeer.getASAPHubManager().getHubs();
         Assert.assertEquals(0, hubs.size());
 
         // add again
-        this.alicePeer.addASAPHub(hubDescription1);
-        this.alicePeer.addASAPHub(hubDescription2);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription1);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription2);
 
         // remove all
-        this.alicePeer.removeASAPHubs();
-        hubs = this.alicePeer.getHubs();
+        this.alicePeer.getASAPHubManager().removeASAPHubs();
+        hubs = this.alicePeer.getASAPHubManager().getHubs();
         Assert.assertEquals(0, hubs.size());
     }
 
@@ -169,12 +169,12 @@ public class ASAPHubUsage extends TestHelper {
         };
 
         // set hub description on Alice side
-        this.alicePeer.addASAPHub(hubDescription);
+        this.alicePeer.getASAPHubManager().addASAPHub(hubDescription);
         // .. and Bob side
-        this.bobPeer.addASAPHub(hubDescription); // same hub - same description
+        this.bobPeer.getASAPHubManager().addASAPHub(hubDescription); // same hub - same description
 
-        this.alicePeer.connectASAPHubs();
-        this.bobPeer.connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
+        this.alicePeer.getASAPHubManager().connectASAPHubs();
+        this.bobPeer.getASAPHubManager().connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
 
         Thread.sleep(1000);
         /*
