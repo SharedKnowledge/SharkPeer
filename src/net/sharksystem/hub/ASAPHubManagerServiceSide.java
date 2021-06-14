@@ -16,7 +16,7 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
         super(asapPeer);
     }
 
-    private Map<HubConnectorDescription, HubConnector> activeHubConnections = new HashMap<>();
+    private Map<HubConnectorDescription, HubConnectionManager> activeHubConnections = new HashMap<>();
 
     @Override
     public void connectASAPHub(HubConnectorDescription hubDescription)
@@ -27,9 +27,9 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
                 TCPHubConnectorDescription tcpDescription = (TCPHubConnectorDescription) hubDescription;
                 HubConnector tcpHubConnector = SharedTCPChannelConnectorPeerSide.createTCPHubConnector(
                         tcpDescription.getHubHostName(), tcpDescription.getHubHostPort());
-                tcpHubConnector.setListener(this);
-                tcpHubConnector.connectHub(this.getASAPPeer().getPeerID());
-                this.activeHubConnections.put(hubDescription, tcpHubConnector);
+
+                this.activeHubConnections.put(hubDescription,
+                        new HubConnectionManager(this.getASAPPeer(), tcpHubConnector));
                 break;
             default: throw new SharkNotSupportedException("unsupported connection type / protocol");
         }
@@ -71,7 +71,7 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
 
     @Override
     public void disconnectASAPHubs(HubConnectorProtocol connectionType) throws ASAPHubException, IOException {
-        List<HubConnector> activeConnections = new ArrayList<>();
+        List<HubConnectionManager> activeConnections = new ArrayList<>();
 
         for(HubConnectorDescription description : this.activeHubConnections.keySet()) {
             if(description.getHubConnectorType() == connectionType) {
@@ -84,20 +84,21 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
     @Override
     public void disconnectASAPHub(HubConnectorDescription hubDescription) throws ASAPHubException, IOException {
         // find matching active connection
-
+        List<HubConnectionManager> connectionManagerList = new ArrayList<>();
         for(HubConnectorDescription description : this.activeHubConnections.keySet()) {
             if(HubConnectorAlgebra.same(hubDescription, description)) {
-                List<HubConnector> connectionList = new ArrayList<>();
-                connectionList.add(this.activeHubConnections.get(description));
-                this.disconnectASAPHubs(connectionList);
+                connectionManagerList.add(this.activeHubConnections.get(description));
+                this.disconnectASAPHubs(connectionManagerList);
                 return; // just one.
             }
         }
     }
 
-    private void disconnectASAPHubs(Collection<HubConnector> hubConnectorList) throws ASAPHubException, IOException {
-        for(HubConnector connector : hubConnectorList) {
-            connector.disconnectHub();
+    private void disconnectASAPHubs(Collection<HubConnectionManager> hubConnectionManagerList)
+            throws ASAPHubException, IOException {
+
+        for(HubConnectionManager connectorManager : hubConnectionManagerList) {
+            connectorManager.disconnectHub();
         }
     }
 }
