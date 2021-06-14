@@ -200,18 +200,59 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                              hub management                                                //
+    //                                              extra data                                                    //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //// persist hub list
-    private void saveHubList() {
-        // implement a get / putExtra in ASAPInternalPeerFS and make it available via ASAPPeer interface.
+    @Override
+    public void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException {
+        if(this.asapPeer == null) {
+            throw new SharkException("peer is not yet launched - initialize your shark system");
+        }
+        this.asapPeer.putExtra(key, value);
     }
 
+    @Override
+    public byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException {
+        if(this.asapPeer == null) {
+            throw new SharkException("peer is not yet launched - initialize your shark system");
+        }
+        return this.asapPeer.getExtra(key);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                              hub management                                                //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private List<HubConnectorDescription> hubList = new ArrayList<>();
+    public static final String HUB_LIST_KEY = "SharkPeerHubList";
+
+    //// persist hub list
+    private void saveHubList() throws IOException {
+        try {
+            this.putExtra(HUB_LIST_KEY, HubConnectorAlgebra.serializeCollection(this.hubList));
+        } catch (SharkException | ASAPException e) {
+            // not yet launched.. hopefully it does not get lost in memory before launch
+        }
+    }
+
+    private void restoreHubList() {
+        try {
+            try {
+                byte[] serializedHubList = this.getExtra(HUB_LIST_KEY);
+                if(serializedHubList == null) {
+                    this.hubList = new ArrayList<>();
+                    return;
+                }
+                this.hubList = HubConnectorAlgebra.deserializeList(serializedHubList);
+            } catch (SharkException e) {
+                // system not yet launched
+                return;
+            }
+        } catch (ASAPException | IOException e) {
+            Log.writeLogErr(this, "cannot restore extra data");
+        }
+    }
 
     @Override
-    public void addASAPHub(HubConnectorDescription hubDescription) {
+    public void addASAPHub(HubConnectorDescription hubDescription) throws IOException {
         // already in there?
         for(HubConnectorDescription inList : this.hubList) {
             if(HubConnectorAlgebra.same(inList, hubDescription)) {
@@ -221,15 +262,16 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
         }
 
         this.hubList.add(hubDescription);
-
         this.saveHubList();
     }
 
     public Collection<HubConnectorDescription> getHubs() {
+        this.restoreHubList();
         return this.hubList;
     }
 
     public Collection<HubConnectorDescription> getHubs(HubConnectorProtocol connectionType) {
+        this.restoreHubList();
         List<HubConnectorDescription> retList = new ArrayList<>();
         for (HubConnectorDescription inList : this.hubList) {
             if (inList.getHubConnectorType() == connectionType) {
@@ -241,7 +283,7 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     }
 
     @Override
-    public void removeASAPHub(HubConnectorDescription hubDescription) {
+    public void removeASAPHub(HubConnectorDescription hubDescription) throws IOException {
         if (!this.hubList.remove(hubDescription)) {
             // not that object found - but maybe some that describes the same hub?
             HubConnectorDescription toRemove = null;
@@ -259,7 +301,7 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     }
 
     @Override
-    public void removeASAPHubs(HubConnectorProtocol connectionType) {
+    public void removeASAPHubs(HubConnectorProtocol connectionType) throws IOException {
         List<HubConnectorDescription> toRemoveList = new ArrayList<>();
         for (HubConnectorDescription inList : this.hubList) {
             if (inList.getHubConnectorType() == connectionType) {
@@ -275,7 +317,7 @@ public class SharkPeerFS implements SharkPeer, NewConnectionListener {
     }
 
     @Override
-    public void removeASAPHubs() {
+    public void removeASAPHubs() throws IOException {
         this.hubList = new ArrayList<>();
         this.saveHubList();
     }

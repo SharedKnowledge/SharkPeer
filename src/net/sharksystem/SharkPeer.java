@@ -1,5 +1,6 @@
 package net.sharksystem;
 
+import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.hub.ASAPHubException;
 import net.sharksystem.hub.HubConnectorDescription;
@@ -105,7 +106,7 @@ public interface SharkPeer {
      * Add a hub description.
      * @param hubDescription
      */
-    void addASAPHub(HubConnectorDescription hubDescription);
+    void addASAPHub(HubConnectorDescription hubDescription) throws IOException;
 
     Collection<HubConnectorDescription> getHubs();
 
@@ -149,16 +150,30 @@ public interface SharkPeer {
      * Remove a hub description
      * @param hubDescription
      */
-    void removeASAPHub(HubConnectorDescription hubDescription);
+    void removeASAPHub(HubConnectorDescription hubDescription) throws IOException;
 
     /**
      * Remove all hub description of a given connection type
      * @param connectionType
      */
-    void removeASAPHubs(HubConnectorProtocol connectionType);
+    void removeASAPHubs(HubConnectorProtocol connectionType) throws IOException;
 
     /**
      * Remove all hub descriptions.
      */
-    void removeASAPHubs();
+    void removeASAPHubs() throws IOException;
+
+    /**
+     * Make a value persistent with key
+     * @param key
+     * @param value
+     */
+    void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException;
+
+    /**
+     * Return a value. Throws an exception if not set
+     * @param key
+     * @throws ASAPException key never used in putExtra
+     */
+    byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException;
 }

@@ -5,7 +5,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        SharkComponentTests.class
+        SharkComponentTests.class,
+        ASAPHubUsage.class
 })
 public class V1TestSuite {
 

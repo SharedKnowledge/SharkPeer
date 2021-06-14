@@ -1,14 +1,19 @@
 package net.sharksystem;
 
 import net.sharksystem.asap.ASAPException;
+import net.sharksystem.hub.HubConnectorAlgebra;
 import net.sharksystem.hub.HubConnectorDescription;
 import net.sharksystem.hub.HubConnectorProtocol;
 import net.sharksystem.hub.TCPHubConnectorDescription;
 import net.sharksystem.hub.hubside.Hub;
 import net.sharksystem.hub.hubside.TCPHub;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ASAPHubUsage extends TestHelper {
     public static final int MAX_HUB_CONNECTION_IDLE_IN_SECONDS = 1;
@@ -17,7 +22,128 @@ public class ASAPHubUsage extends TestHelper {
     }
 
     @Test
-    public void usage() throws SharkException, ASAPException, IOException, InterruptedException {
+    public void hubDescriptionPersistence1() throws IOException, ASAPException {
+        // serializing hub descriptions
+
+        TCPHubConnectorDescription hubDescription1 = new TCPHubConnectorDescription() {
+            public String getHubHostName() {
+                return "localhost";
+            }
+            public int getHubHostPort() {
+                return Hub.DEFAULT_PORT;
+            }
+            public HubConnectorProtocol getHubConnectorType() {
+                return HubConnectorProtocol.TCP;
+            }
+        };
+
+        TCPHubConnectorDescription hubDescription2 = new TCPHubConnectorDescription() {
+            public String getHubHostName() {
+                return "123.45.67.89";
+            }
+            public int getHubHostPort() {
+                return 5555;
+            }
+            public HubConnectorProtocol getHubConnectorType() {
+                return HubConnectorProtocol.TCP;
+            }
+        };
+
+        byte[] serialize1 = HubConnectorAlgebra.serialize(hubDescription1);
+        byte[] serialize2 = HubConnectorAlgebra.serialize(hubDescription2);
+
+        HubConnectorDescription hubR1 = HubConnectorAlgebra.deserialize(serialize1);
+        HubConnectorDescription hubR2 = HubConnectorAlgebra.deserialize(serialize2);
+
+        Assert.assertTrue(hubR1.getHubConnectorType() == hubDescription1.getHubConnectorType());
+        TCPHubConnectorDescription hubTCP_R1 = (TCPHubConnectorDescription) hubR1;
+        Assert.assertTrue(hubTCP_R1.getHubHostName().equalsIgnoreCase(hubDescription1.getHubHostName()));
+        Assert.assertTrue(hubTCP_R1.getHubHostPort() == hubDescription1.getHubHostPort());
+
+        Assert.assertTrue(hubR2.getHubConnectorType() == hubDescription2.getHubConnectorType());
+        TCPHubConnectorDescription hubTCP_R2 = (TCPHubConnectorDescription) hubR2;
+        Assert.assertTrue(hubTCP_R2.getHubHostName().equalsIgnoreCase(hubDescription2.getHubHostName()));
+        Assert.assertTrue(hubTCP_R2.getHubHostPort() == hubDescription2.getHubHostPort());
+
+        // now all together
+        List<HubConnectorDescription> descriptionList = new ArrayList<>();
+        descriptionList.add(hubDescription1);
+        descriptionList.add(hubDescription2);
+        byte[] serializeCollection = HubConnectorAlgebra.serializeCollection(descriptionList);
+        List<HubConnectorDescription> hubConnectorDescriptions = HubConnectorAlgebra.deserializeList(serializeCollection);
+
+        Assert.assertEquals(2, hubConnectorDescriptions.size());
+    }
+
+    @Test
+    public void hubDescriptionPersistence2() throws SharkException, ASAPException, IOException, InterruptedException {
+        /*
+        String aliceFolderName = aliceFolder + "_HubPersistence2";
+        SharkTestPeerFS.removeFolder(aliceFolderName);
+        this.alicePeer = new SharkTestPeerFS(ALICE_ID, aliceFolderName);
+         */
+        this.setUpScenario_1();
+
+        TCPHubConnectorDescription hubDescription1 = new TCPHubConnectorDescription() {
+            public String getHubHostName() {
+                return "localhost";
+            }
+            public int getHubHostPort() {
+                return Hub.DEFAULT_PORT;
+            }
+            public HubConnectorProtocol getHubConnectorType() {
+                return HubConnectorProtocol.TCP;
+            }
+        };
+
+        TCPHubConnectorDescription hubDescription2 = new TCPHubConnectorDescription() {
+            public String getHubHostName() {
+                return "123.45.67.89";
+            }
+            public int getHubHostPort() {
+                return 5555;
+            }
+            public HubConnectorProtocol getHubConnectorType() {
+                return HubConnectorProtocol.TCP;
+            }
+        };
+
+
+        this.alicePeer.addASAPHub(hubDescription1);
+        this.alicePeer.addASAPHub(hubDescription2);
+
+        Collection<HubConnectorDescription> hubs = this.alicePeer.getHubs();
+        Assert.assertEquals(2, hubs.size());
+
+        this.alicePeer.removeASAPHub(hubDescription1);
+        hubs = this.alicePeer.getHubs();
+        Assert.assertEquals(1, hubs.size());
+
+        this.alicePeer.removeASAPHub(hubDescription2);
+        hubs = this.alicePeer.getHubs();
+        Assert.assertEquals(0, hubs.size());
+
+        // add again
+        this.alicePeer.addASAPHub(hubDescription1);
+        this.alicePeer.addASAPHub(hubDescription2);
+
+        // remove all TCP
+        this.alicePeer.removeASAPHubs(HubConnectorProtocol.TCP);
+        hubs = this.alicePeer.getHubs();
+        Assert.assertEquals(0, hubs.size());
+
+        // add again
+        this.alicePeer.addASAPHub(hubDescription1);
+        this.alicePeer.addASAPHub(hubDescription2);
+
+        // remove all
+        this.alicePeer.removeASAPHubs();
+        hubs = this.alicePeer.getHubs();
+        Assert.assertEquals(0, hubs.size());
+    }
+
+    @Test
+    public void hubScenario1() throws SharkException, ASAPException, IOException, InterruptedException {
         this.setUpScenario_1();
 
         // Alice broadcast message in channel URI - not signed, not encrypted
@@ -51,6 +177,7 @@ public class ASAPHubUsage extends TestHelper {
         this.bobPeer.connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
 
         Thread.sleep(1000);
+        /*
         this.alicePeer.connectASAPHub(hubDescription); // variant
 
         this.alicePeer.disconnectASAPHubs();
@@ -60,6 +187,7 @@ public class ASAPHubUsage extends TestHelper {
         this.alicePeer.removeASAPHub(hubDescription);
         this.bobPeer.removeASAPHubs(HubConnectorProtocol.TCP); // variant
         this.bobPeer.removeASAPHubs(); // variant
+         */
 
         /*
         // test results on Bobs side
