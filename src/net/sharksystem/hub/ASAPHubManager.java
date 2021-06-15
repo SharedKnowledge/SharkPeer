@@ -66,4 +66,16 @@ public interface ASAPHubManager {
      * Remove all hub descriptions.
      */
     void removeASAPHubs() throws IOException;
+
+    int DEFAULT_RECONNECT_INTERVAL_IN_SECONDS = 600; // 10 minutes
+
+    /**
+     * Connecting to a hub includes two things: Establishing a point-to-point connection to the hub and
+     * register this a peer. Afterwards, hub is asked for a list of registered peers. A connection is established to
+     * each peer on the list. A break is made after we are trough with the list. This method allows setting break
+     * duration in seconds. Default is 600 == 10 minutes.
+     *
+     * @param seconds
+     */
+    void setReconnectIntervalInSeconds(int seconds);
 }

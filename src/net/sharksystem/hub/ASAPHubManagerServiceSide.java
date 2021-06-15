@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
+    private int reconnectIntervalInSeconds;
+
     public ASAPHubManagerServiceSide(ASAPPeer asapPeer) {
         super(asapPeer);
     }
@@ -29,7 +31,7 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
                         tcpDescription.getHubHostName(), tcpDescription.getHubHostPort());
 
                 this.activeHubConnections.put(hubDescription,
-                        new HubConnectionManager(this.getASAPPeer(), tcpHubConnector));
+                        new HubConnectionManager(this.getASAPPeer(), tcpHubConnector, this.reconnectIntervalInSeconds));
                 break;
             default: throw new SharkNotSupportedException("unsupported connection type / protocol");
         }
@@ -91,6 +93,15 @@ public class ASAPHubManagerServiceSide extends ASAPHubManagerImpl {
                 this.disconnectASAPHubs(connectionManagerList);
                 return; // just one.
             }
+        }
+    }
+
+    @Override
+    public void setReconnectIntervalInSeconds(int seconds) {
+        this.reconnectIntervalInSeconds = seconds;
+        // tell active connections
+        for(HubConnectionManager connMan : this.activeHubConnections.values()) {
+            connMan.setReconnectIntervalInSeconds(seconds);
         }
     }
 

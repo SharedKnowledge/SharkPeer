@@ -170,13 +170,18 @@ public class ASAPHubUsage extends TestHelper {
 
         // set hub description on Alice side
         this.alicePeer.getASAPHubManager().addASAPHub(hubDescription);
+        this.alicePeer.getASAPHubManager().setReconnectIntervalInSeconds(1);
         // .. and Bob side
         this.bobPeer.getASAPHubManager().addASAPHub(hubDescription); // same hub - same description
+        this.bobPeer.getASAPHubManager().setReconnectIntervalInSeconds(1);
 
         this.alicePeer.getASAPHubManager().connectASAPHubs();
         this.bobPeer.getASAPHubManager().connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
 
-        Thread.sleep(1000);
+        Thread.sleep(3000);
+
+        // TODO will not work with three peers... callback connectedAndopen does not work...
+
         /*
         this.alicePeer.connectASAPHub(hubDescription); // variant
 
