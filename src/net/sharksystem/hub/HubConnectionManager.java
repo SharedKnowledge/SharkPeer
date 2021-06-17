@@ -53,6 +53,28 @@ class HubConnectionManager implements NewConnectionListener, Runnable, HubConnec
         }
     }
 
+
+    @Override
+    public void notifySynced() {
+        if(this.waitingForSynced != null) {
+            this.waitingForSynced.interrupt();
+            this.waitingForSynced = null;
+        }
+    }
+
+    private Thread waitingForSynced = null;
+    private void wait4Synced() {
+        Log.writeLog(this, this.toString(), "wait for sync reply from hub");
+        try {
+            this.waitingForSynced = Thread.currentThread();
+            Thread.sleep(Long.MAX_VALUE);
+        } catch (InterruptedException e) {
+            // woke up - try again
+            Log.writeLog(this, this.toString(), "wait for sync - woke up");
+        }
+    }
+
+
     void disconnectHub() throws ASAPHubException, IOException {
         this.connector.disconnectHub();
     }
@@ -82,7 +104,6 @@ class HubConnectionManager implements NewConnectionListener, Runnable, HubConnec
         }
     }
 
-
     private Thread waitingThreadForConnectedAndOpen = null;
     private void wait4ConnectedAndOpen() {
         if (!this.connectedAndOpen) {
@@ -99,11 +120,8 @@ class HubConnectionManager implements NewConnectionListener, Runnable, HubConnec
 
     private void connectPeers(Collection<CharSequence> peerIDs) throws IOException {
         for (CharSequence peerID : peerIDs) {
-            Log.writeLog(this, this.toString(), "plan to connect to " + peerID);
-
             this.wait4ConnectedAndOpen(); // wait
             this.connectedAndOpen = false; // take it
-
             Log.writeLog(this, this.toString(), "connection open and ready: try to connect: " + peerID);
             this.connector.connectPeer(peerID);
         }
@@ -120,12 +138,14 @@ class HubConnectionManager implements NewConnectionListener, Runnable, HubConnec
 
                 this.wait4ConnectedAndOpen();
                 this.connector.syncHubInformation();
+                this.wait4Synced();
 
                 Log.writeLog(this, this.toString(), "synced with hub");
                 Collection<CharSequence> peerIDs = this.connector.getPeerIDs();
 
                 Log.writeLog(this, this.toString(), "peers@hub: " +
-                        Helper.collOfCharSequence2DebugOutput(peerIDs));
+                        peerIDs);
+//                Helper.collOfCharSequence2DebugOutput(peerIDs)); // remove from ASAPJava TODO
 
                 List<CharSequence> metPeers = new ArrayList<>();
                 List<CharSequence> newPeers = new ArrayList<>();
