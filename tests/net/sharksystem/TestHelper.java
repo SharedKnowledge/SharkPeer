@@ -41,6 +41,7 @@ public class TestHelper {
         this.testName = testName;
 
         this.subRootFolder = TestConstants.ROOT_DIRECTORY + testName + "/";
+        SharkTestPeerFS.removeFolder(this.subRootFolder);
 
         this.aliceFolder = subRootFolder + ALICE_ID;
         this.bobFolder = subRootFolder + BOB_ID;
