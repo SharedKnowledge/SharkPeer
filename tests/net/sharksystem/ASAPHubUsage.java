@@ -189,7 +189,7 @@ public class ASAPHubUsage extends TestHelper {
         Thread.sleep(3000);
 
         // test results on Bobs side
-        ASAPStorage bobAsapStorage = this.bobPeer.getASAPPeer().getASAPStorage(YourComponent.FORMAT_A);
+        ASAPStorage bobAsapStorage = this.bobPeer.getASAPPeer().getASAPStorage(YourComponent.APP_FORMAT);
         List<CharSequence> senderList = bobAsapStorage.getSender();
 
         // Bob knows Alice now.
@@ -205,7 +205,7 @@ public class ASAPHubUsage extends TestHelper {
         Assert.assertNotNull(message);
 
         // same with Clara
-        ASAPStorage claraAsapStorage = this.claraPeer.getASAPPeer().getASAPStorage(YourComponent.FORMAT_A);
+        ASAPStorage claraAsapStorage = this.claraPeer.getASAPPeer().getASAPStorage(YourComponent.APP_FORMAT);
         senderList = claraAsapStorage.getSender();
 
         // Clara knows Alice now.

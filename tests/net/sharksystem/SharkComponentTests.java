@@ -83,7 +83,6 @@ public class SharkComponentTests {
 
         ////////////////////////////////// test if anything was ok.
         // Alice should have received Bob broadcast on format A but nothing on format B
-        Assert.assertEquals(1, aliceListener.counterA);
-        Assert.assertEquals(0, aliceListener.counterB);
+        Assert.assertEquals(1, aliceListener.counter);
     }
 }

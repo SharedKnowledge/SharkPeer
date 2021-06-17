@@ -22,13 +22,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
 
         // listen to message type A
         this.asapPeer.addASAPMessageReceivedListener(
-                YourComponent.FORMAT_A, this);
-
-        // listen to message type B - could also implement a different listener object
-        this.asapPeer.addASAPMessageReceivedListener(
-                YourComponent.FORMAT_B, this);
-
-
+                YourComponent.APP_FORMAT, this);
     }
 
     @Override
@@ -46,7 +40,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
         // serialize your structure - simple here.
         byte[] messageBytes = this.serializeMessage(broadcast);
         try {
-            this.asapPeer.sendASAPMessage(YourComponent.FORMAT_A, uri, messageBytes);
+            this.asapPeer.sendASAPMessage(YourComponent.APP_FORMAT, uri, messageBytes);
         } catch (ASAPException e) {
             System.err.println("cannot send message: " + e.getLocalizedMessage());
             e.printStackTrace();
@@ -55,7 +49,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
 
     @Override
     public Iterator<String> getMessagesA(String uri) throws IOException, ASAPException {
-        ASAPStorage asapStorage = this.asapPeer.getASAPStorage(YourComponent.FORMAT_A);
+        ASAPStorage asapStorage = this.asapPeer.getASAPStorage(YourComponent.APP_FORMAT);
         ASAPChannel channel = asapStorage.getChannel(uri);
         ASAPMessages messages = channel.getMessages();
 
@@ -84,14 +78,9 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
             String messageString = this.deserializeMessage(message);
             CharSequence format = asapMessages.getFormat();
 
-            if(format.toString().equalsIgnoreCase(YourComponent.FORMAT_A)) {
+            if(format.toString().equalsIgnoreCase(YourComponent.APP_FORMAT)) {
                 for(YourComponentListener l : this.listenerList) {
                     l.somethingHappenedFormatA(messageString);
-                }
-            }
-            else if(format.toString().equalsIgnoreCase(YourComponent.FORMAT_B)) {
-                for(YourComponentListener l : this.listenerList) {
-                    l.somethingHappenedFormatB(messageString);
                 }
             }
             else {

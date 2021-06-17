@@ -5,5 +5,4 @@ package net.sharksystem;
  */
 public interface YourComponentListener {
     void somethingHappenedFormatA(CharSequence message);
-    void somethingHappenedFormatB(CharSequence message);
 }
