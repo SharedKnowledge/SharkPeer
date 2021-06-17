@@ -1,6 +1,8 @@
 package net.sharksystem;
 
+import net.sharksystem.asap.ASAPChannel;
 import net.sharksystem.asap.ASAPException;
+import net.sharksystem.asap.ASAPStorage;
 import net.sharksystem.hub.HubConnectorAlgebra;
 import net.sharksystem.hub.HubConnectorDescription;
 import net.sharksystem.hub.HubConnectorProtocol;
@@ -171,32 +173,23 @@ public class ASAPHubUsage extends TestHelper {
         // set hub description on Alice side
         this.alicePeer.getASAPHubManager().addASAPHub(hubDescription);
         this.alicePeer.getASAPHubManager().setReconnectIntervalInSeconds(1);
+
         // .. and Bob side
         this.bobPeer.getASAPHubManager().addASAPHub(hubDescription); // same hub - same description
         this.bobPeer.getASAPHubManager().setReconnectIntervalInSeconds(1);
 
+        // .. and Clara
+        this.claraPeer.getASAPHubManager().addASAPHub(hubDescription); // same hub - same description
+        this.claraPeer.getASAPHubManager().setReconnectIntervalInSeconds(1);
+
         this.alicePeer.getASAPHubManager().connectASAPHubs();
         this.bobPeer.getASAPHubManager().connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
+        this.claraPeer.getASAPHubManager().connectASAPHub(hubDescription);
 
         Thread.sleep(3000);
 
-        // TODO will not work with three peers... callback connectedAndopen does not work...
-
-        /*
-        this.alicePeer.connectASAPHub(hubDescription); // variant
-
-        this.alicePeer.disconnectASAPHubs();
-        this.alicePeer.disconnectASAPHub(hubDescription); // variant
-        this.bobPeer.disconnectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
-
-        this.alicePeer.removeASAPHub(hubDescription);
-        this.bobPeer.removeASAPHubs(HubConnectorProtocol.TCP); // variant
-        this.bobPeer.removeASAPHubs(); // variant
-         */
-
-        /*
         // test results on Bobs side
-        ASAPStorage bobAsapStorage = bobMessengerImpl.getASAPStorage();
+        ASAPStorage bobAsapStorage = this.bobPeer.getASAPPeer().getASAPStorage(YourComponent.FORMAT_A);
         List<CharSequence> senderList = bobAsapStorage.getSender();
 
         // Bob knows Alice now.
@@ -211,26 +204,21 @@ public class ASAPHubUsage extends TestHelper {
         byte[] message = channel.getMessages().getMessage(0, true);
         Assert.assertNotNull(message);
 
-        SharkMessengerChannel bobChannel = bobMessenger.getChannel(URI);
-        SharkMessage sharkMessage = bobChannel.getMessages().getSharkMessage(0, true);
-        // message received by Bob from Alice?
-        Assert.assertTrue(alicePeer.samePeer(sharkMessage.getSender()));
-        Assert.assertTrue(Utils.compareArrays(sharkMessage.getContent(), MESSAGE_BYTE));
-        Assert.assertFalse(sharkMessage.encrypted());
-        Assert.assertFalse(sharkMessage.verified());
-         */
+        // same with Clara
+        ASAPStorage claraAsapStorage = this.claraPeer.getASAPPeer().getASAPStorage(YourComponent.FORMAT_A);
+        senderList = claraAsapStorage.getSender();
 
-        /*
-        ///////////////////////////////// Encounter Alice - Clara ////////////////////////////////////////////////////
-        this.runEncounter(this.alicePeer, this.claraPeer, true);
+        // Clara knows Alice now.
+        Assert.assertNotNull(senderList);
+        Assert.assertFalse(senderList.isEmpty());
+        senderID = senderList.get(0);
+        Assert.assertTrue(alicePeer.samePeer(senderID));
 
-        // test results
-        // message received by Clara from Alice?
-        Assert.assertTrue(alicePeer.samePeer(sharkMessage.getSender()));
-        Assert.assertTrue(Utils.compareArrays(sharkMessage.getContent(), MESSAGE_BYTE));
-        Assert.assertFalse(sharkMessage.encrypted());
-        Assert.assertFalse(sharkMessage.verified());
-        */
+        // Clara received message
+        senderIncomingStorage = claraAsapStorage.getExistingIncomingStorage(senderID);
+        channel = senderIncomingStorage.getChannel(URI);
+        message = channel.getMessages().getMessage(0, true);
+        Assert.assertNotNull(message);
 
     }
 }
