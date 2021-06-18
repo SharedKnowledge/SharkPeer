@@ -191,7 +191,8 @@ public class ASAPHubUsage extends TestHelper {
         this.alicePeer.getASAPHubManager().connectASAPHubs();
         //Thread.sleep(100); // avoid race condition yet
         this.bobPeer.getASAPHubManager().connectASAPHubs(HubConnectorProtocol.TCP); // variant .. specify connector type.
-        //Thread.sleep(100);
+
+        Thread.sleep(1000); // Clara needs to come last
         this.claraPeer.getASAPHubManager().connectASAPHub(hubDescription);
 
         Thread.sleep(3000);

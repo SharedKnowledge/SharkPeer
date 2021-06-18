@@ -120,9 +120,13 @@ class HubConnectionManager implements NewConnectionListener, Runnable, HubConnec
 
     private void connectPeers(Collection<CharSequence> peerIDs) throws IOException {
         for (CharSequence peerID : peerIDs) {
+            /*
             this.wait4ConnectedAndOpen(); // wait
             this.connectedAndOpen = false; // take it
             Log.writeLog(this, this.toString(), "connection open and ready: try to connect: " + peerID);
+            // we do not need this - connect is a request...
+             */
+            Log.writeLog(this, this.toString(), "try to connect: " + peerID);
             this.connector.connectPeer(peerID);
         }
     }
