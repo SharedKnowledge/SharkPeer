@@ -1,5 +1,7 @@
 package net.sharksystem;
 
+import java.util.Set;
+
 public interface SortedMessage {
     /**
      * Compares this message with another one
@@ -9,11 +11,20 @@ public interface SortedMessage {
     boolean isBefore(SortedMessage otherMessage);
 
     /**
-     * Check if this message is a reply of another message. (Optional)
+     * Connect this message with another message with a relation. This could be e.g. "in-reply-to". Applications would
+     * be able to define semantic relations between messages. (Implementation is optional)
+     * @param relationName
      * @param otherMessage
+     */
+    void setRelation(CharSequence relationName, SortedMessage otherMessage);
+
+    /**
+     * Produces a list of message ID which are related to this over a given relation name.
+     * @param relationName
+     * @throws SharkException there are no related messages.
      * @return
      */
-    boolean isReply(SortedMessage otherMessage);
+    Set<CharSequence> getRelatedMessages(CharSequence relationName) throws SharkException;
 
     /**
      *
