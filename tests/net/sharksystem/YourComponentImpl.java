@@ -26,17 +26,12 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
     }
 
     @Override
-    public void setBehaviour(String behaviourName, boolean on) throws SharkUnknownBehaviourException {
-        throw new SharkUnknownBehaviourException("unknown behaviour: " + behaviourName);
+    public void subscribeYourComponentListener(YourComponentListener yourListener) {
+        this.listenerList.add(yourListener);
     }
 
     @Override
-    public void subscribeYourComponentListener(YourComponentListener listener) {
-        this.listenerList.add(listener);
-    }
-
-    @Override
-    public void sendBroadcastMessageA(String uri, String broadcast) {
+    public void sendBroadcastMessage(String uri, String broadcast) {
         // serialize your structure - simple here.
         byte[] messageBytes = this.serializeMessage(broadcast);
         try {
@@ -48,7 +43,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
     }
 
     @Override
-    public Iterator<String> getMessagesA(String uri) throws IOException, ASAPException {
+    public Iterator<String> getMessages(String uri) throws IOException, ASAPException {
         ASAPStorage asapStorage = this.asapPeer.getASAPStorage(YourComponent.APP_FORMAT);
         ASAPChannel channel = asapStorage.getChannel(uri);
         ASAPMessages messages = channel.getMessages();
@@ -80,7 +75,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
 
             if(format.toString().equalsIgnoreCase(YourComponent.APP_FORMAT)) {
                 for(YourComponentListener l : this.listenerList) {
-                    l.somethingHappenedFormatA(messageString);
+                    l.somethingHappened(messageString);
                 }
             }
             else {

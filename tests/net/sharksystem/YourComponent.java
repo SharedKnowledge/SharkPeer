@@ -9,9 +9,25 @@ import java.util.Iterator;
 public interface YourComponent extends SharkComponent {
     String APP_FORMAT = "myApp://formatA";
 
-    void subscribeYourComponentListener(YourComponentListener aliceListener);
+    /**
+     * Get informed about newly arrived messages
+     * @param yourListener
+     */
+    void subscribeYourComponentListener(YourComponentListener yourListener);
 
-    void sendBroadcastMessageA(String uri, String broadcast);
+    /**
+     * this application is a message broadcasting system, like e.g. Twitter.
+     * @param uri specify a channel
+     * @param broadcast message a simple string
+     */
+    void sendBroadcastMessage(String uri, String broadcast);
 
-    Iterator<String> getMessagesA(String uri) throws IOException, ASAPException;
+    /**
+     * Get all messages in a channel
+     * @param uri channel uri
+     * @return
+     * @throws IOException
+     * @throws ASAPException
+     */
+    Iterator<String> getMessages(String uri) throws IOException, ASAPException;
 }

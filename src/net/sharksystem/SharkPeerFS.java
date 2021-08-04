@@ -195,20 +195,6 @@ public class SharkPeerFS implements SharkPeer {
         return this.getASAPPeer().getPeerID();
     }
 
-    private ASAPHubManager asapHubManager = null;
-    @Override
-    public ASAPHubManager getASAPHubManager() throws SharkException {
-        if(this.asapHubManager == null) {
-            if (this.asapPeer == null) {
-                throw new SharkException("cannot produce asap hub manager before system initialization");
-            }
-
-            this.asapHubManager = new ASAPHubManagerServiceSide(this.asapPeer);
-        }
-
-        return this.asapHubManager;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                              extra data                                                    //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -227,5 +213,4 @@ public class SharkPeerFS implements SharkPeer {
         }
         return this.asapPeer.getExtra(key);
     }
-
 }

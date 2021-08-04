@@ -2,10 +2,6 @@ package net.sharksystem;
 
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
-import net.sharksystem.hub.ASAPHubException;
-import net.sharksystem.hub.ASAPHubManager;
-import net.sharksystem.hub.HubConnectorDescription;
-import net.sharksystem.hub.HubConnectorProtocol;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -102,8 +98,6 @@ public interface SharkPeer {
     boolean samePeer(CharSequence otherPeerID) throws SharkException;
 
     CharSequence getPeerID() throws SharkException;
-
-    ASAPHubManager getASAPHubManager() throws SharkException;
 
     /**
      * Make a value persistent with key

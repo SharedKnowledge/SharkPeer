@@ -48,5 +48,5 @@ public interface SharkComponent {
      * @param on
      * @see ASAPPeer#sendASAPMessage(CharSequence, CharSequence, byte[])
      */
-    void setBehaviour(String behaviourName, boolean on) throws SharkUnknownBehaviourException, ASAPException, IOException;
+//    void setBehaviour(String behaviourName, boolean on) throws SharkUnknownBehaviourException, ASAPException, IOException;
 }

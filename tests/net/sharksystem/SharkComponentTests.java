@@ -71,7 +71,7 @@ public class SharkComponentTests {
         bobSharkPeer.start();
 
         // Bob sends a broadcast on format A
-        bobComponent.sendBroadcastMessageA(YOUR_URI, "Hi all listeners of A");
+        bobComponent.sendBroadcastMessage(YOUR_URI, "Hi all listeners of A");
 
         ///////////////////////////////// Test specific code - make an encounter Alice Bob
         aliceSharkPeer.getASAPTestPeerFS().startEncounter(7777, bobSharkPeer.getASAPTestPeerFS());
