@@ -8,6 +8,7 @@ import java.util.Iterator;
 @ASAPFormats(formats = {YourComponent.APP_FORMAT})
 public interface YourComponent extends SharkComponent {
     String APP_FORMAT = "myApp://formatA";
+    String APP_FORMAT_MIME = "application/x-formatA";
 
     /**
      * Get informed about newly arrived messages

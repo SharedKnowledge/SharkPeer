@@ -67,7 +67,7 @@ public class SharkComponentTests {
         ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
-        // Start alice peer
+        // Start bob peer
         bobSharkPeer.start();
 
         // Bob sends a broadcast on format A
