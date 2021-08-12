@@ -1,6 +1,6 @@
 package net.sharksystem;
 
-public class SharkUnknownBehaviourException extends SharkException {
+public class SharkUnknownBehaviourException extends Exception {
     public SharkUnknownBehaviourException() {
         super();
     }
