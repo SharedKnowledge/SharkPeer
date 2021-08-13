@@ -2,6 +2,7 @@ package net.sharksystem;
 
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.utils.DateTimeHelper;
+import net.sharksystem.hub.peerside.TCPHubConnectorDescription;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -84,5 +85,30 @@ public class SharkComponentTests {
         ////////////////////////////////// test if anything was ok.
         // Alice should have received Bob broadcast on format A but nothing on format B
         Assert.assertEquals(1, aliceListener.counter);
+    }
+
+    @Test
+    public void hubDescriptions() throws SharkException, IOException {
+        ////////////// setup Alice
+        SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER);
+        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
+        YourComponent aliceComponent = this.setupComponent(aliceSharkPeer);
+
+        // Start alice peer
+        aliceSharkPeer.start();
+
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_A", 1234));
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_B", 1235));
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_C", 1265));
+
+        // relaunch
+        aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
+        aliceComponent = this.setupComponent(aliceSharkPeer);
+
+        aliceSharkPeer.start();
+
+        aliceSharkPeer.getHubDescription(0);
+        aliceSharkPeer.getHubDescription(1);
+        aliceSharkPeer.getHubDescription(2);
     }
 }

@@ -3,19 +3,17 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.asap.ASAPPeerFS;
-import net.sharksystem.hub.*;
 import net.sharksystem.utils.Log;
 
 import java.io.IOException;
 import java.util.*;
 
-public class SharkPeerFS implements SharkPeer {
+public class SharkPeerFS extends SharkPeerHubSupportImpl implements SharkPeer {
     protected final CharSequence owner;
     protected final CharSequence rootFolder;
     private HashMap<CharSequence, SharkComponentFactory> factories = new HashMap<>();
     protected HashMap<CharSequence, SharkComponent> components = new HashMap<>();
     private SharkPeerStatus status = SharkPeerStatus.NOT_INITIALIZED;
-    private ASAPPeer asapPeer;
 
     public SharkPeerFS(CharSequence owner, CharSequence rootFolder) {
         this.owner = owner;
@@ -132,11 +130,12 @@ public class SharkPeerFS implements SharkPeer {
 
     @Override
     public void start(ASAPPeer asapPeer) throws SharkException {
-        this.asapPeer = asapPeer;
+        this.setASAPPeer(asapPeer);
+
         boolean fullSuccess = true; // optimistic
         for(SharkComponent component : this.components.values()) {
             try {
-                component.onStart(this.asapPeer);
+                component.onStart(asapPeer);
             } catch (SharkException e) {
                 Log.writeLogErr(this, "could not start component: " + e.getLocalizedMessage());
                 throw e;
@@ -178,11 +177,7 @@ public class SharkPeerFS implements SharkPeer {
             throw new SharkException("Shark Peer is not running");
         }
 
-        if(this.asapPeer == null) {
-            throw new SharkException("That's a bug: ASAP peer not created");
-        }
-
-        return this.asapPeer;
+        return super.getASAPPeer();
     }
 
     @Override
@@ -190,27 +185,4 @@ public class SharkPeerFS implements SharkPeer {
         return this.components.keySet();
     }
 
-    @Override
-    public CharSequence getPeerID() throws SharkException {
-        return this.getASAPPeer().getPeerID();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                              extra data                                                    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException {
-        if(this.asapPeer == null) {
-            throw new SharkException("peer is not yet launched - initialize your shark system");
-        }
-        this.asapPeer.putExtra(key, value);
-    }
-
-    @Override
-    public byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException {
-        if(this.asapPeer == null) {
-            throw new SharkException("peer is not yet launched - initialize your shark system");
-        }
-        return this.asapPeer.getExtra(key);
-    }
 }

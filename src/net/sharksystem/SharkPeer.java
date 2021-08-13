@@ -1,10 +1,7 @@
 package net.sharksystem;
 
-import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -19,7 +16,7 @@ import java.util.Set;
  * @see SharkComponentFactory
  * @see ASAPPeer
  */
-public interface SharkPeer {
+public interface SharkPeer extends SharkPeerHubSupport {
     /**
      * Add a component to the Shark app
      * @param componentFactory
@@ -97,19 +94,4 @@ public interface SharkPeer {
 
     boolean samePeer(CharSequence otherPeerID) throws SharkException;
 
-    CharSequence getPeerID() throws SharkException;
-
-    /**
-     * Make a value persistent with key
-     * @param key
-     * @param value
-     */
-    void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException;
-
-    /**
-     * Return a value. Throws an exception if not set
-     * @param key
-     * @throws ASAPException key never used in putExtra
-     */
-    byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException;
 }
