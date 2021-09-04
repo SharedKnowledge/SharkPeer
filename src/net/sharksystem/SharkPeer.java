@@ -16,7 +16,7 @@ import java.util.Set;
  * @see SharkComponentFactory
  * @see ASAPPeer
  */
-public interface SharkPeer extends SharkPeerHubSupport {
+public interface SharkPeer extends SharkPeerBasic {
     /**
      * Add a component to the Shark app
      * @param componentFactory
@@ -45,6 +45,12 @@ public interface SharkPeer extends SharkPeerHubSupport {
     SharkComponent getComponent(Class<? extends SharkComponent> facade) throws SharkException;
 
     /**
+     *
+     * @return set of all formats supported by all added components
+     */
+    Set<CharSequence> getFormats();
+
+    /**
      * Start the Shark peer. An ASAP peer will be launched with listening to all format from all
      * components. Components can neither be added nor withdrawn after launch.
      * @throws SharkException Exception can only be caused by ASAP peer launch
@@ -70,28 +76,4 @@ public interface SharkPeer extends SharkPeerHubSupport {
      * @return current status.
      */
     SharkPeerStatus getStatus();
-
-    /**
-     * @return reference to the ASAPPeer object. It is a good idea to use this interface to get that reference
-     * when using your ASAP app as Shark component.
-     * @throws SharkException e.g. from status - Shark Peer not yet started
-     */
-    ASAPPeer getASAPPeer() throws SharkException;
-
-    /**
-     *
-     * @return set of all formats supported by all added components
-     */
-    Set<CharSequence> getFormats();
-
-    /**
-     * Returns true if both peer represent the same peer - IDs are compared.
-     * @param otherPeer
-     * @throws SharkException peer not yet set and/or initialized
-     * @return
-     */
-    boolean samePeer(SharkPeer otherPeer) throws SharkException;
-
-    boolean samePeer(CharSequence otherPeerID) throws SharkException;
-
 }

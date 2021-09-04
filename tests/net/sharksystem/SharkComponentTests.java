@@ -1,13 +1,20 @@
 package net.sharksystem;
 
+import net.sharksystem.asap.ASAPEncounterManagerImpl;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.utils.DateTimeHelper;
-import net.sharksystem.hub.peerside.TCPHubConnectorDescription;
+import net.sharksystem.hub.hubside.ASAPTCPHub;
+import net.sharksystem.hub.peerside.ASAPHubManager;
+import net.sharksystem.hub.peerside.ASAPHubManagerImpl;
+import net.sharksystem.hub.peerside.HubConnectorDescription;
+import net.sharksystem.hub.peerside.TCPHubConnectorDescriptionImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 public class SharkComponentTests {
@@ -97,9 +104,9 @@ public class SharkComponentTests {
         // Start alice peer
         aliceSharkPeer.start();
 
-        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_A", 1234));
-        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_B", 1235));
-        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescription("exampleHost_C", 1265));
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_A", 1234));
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_B", 1235));
+        aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_C", 1265));
 
         // relaunch
         aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
@@ -110,5 +117,83 @@ public class SharkComponentTests {
         aliceSharkPeer.getHubDescription(0);
         aliceSharkPeer.getHubDescription(1);
         aliceSharkPeer.getHubDescription(2);
+    }
+
+    @Test
+    public void singleHub_twoPeers_multiChannel() throws SharkException, IOException, InterruptedException {
+        int hubPort = TestHelper.getPortNumber();
+
+        String aliceFolder = TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
+        String bobFolder = TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
+
+        HubConnectorDescription localHostHubDescription =
+                new TCPHubConnectorDescriptionImpl("localhost", hubPort, true);
+
+        Collection<HubConnectorDescription> hubDescriptions = new ArrayList<>();
+        hubDescriptions.add(localHostHubDescription);
+
+        // launch asap hub
+        ASAPTCPHub hub = ASAPTCPHub.startTCPHubThread(hubPort, true, TestHelper.MAX_IDLE_IN_SECONDS);
+
+        // give it moment to settle in
+        Thread.sleep(1000);
+
+        //////////////////////////////// setup Alice
+        SharkTestPeerFS.removeFolder(aliceFolder);
+        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, aliceFolder);
+        YourComponent aliceComponent = this.setupComponent(aliceSharkPeer);
+        // start alice peer
+        aliceSharkPeer.start();
+
+        // setup Bob
+        ////////////// setup Bob
+        SharkTestPeerFS.removeFolder(bobFolder);
+        SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, bobFolder);
+        YourComponent bobComponent = this.setupComponent(bobSharkPeer);
+        ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
+        bobComponent.subscribeYourComponentListener(bobListener);
+
+        // Start bob peer
+        bobSharkPeer.start();
+
+        // Alice sends a message
+        aliceComponent.sendBroadcastMessage(YOUR_URI, "Hi there");
+
+        ///////////////////// connect to hub - Alice
+        // setup encounter manager with a connection handler
+        ASAPEncounterManagerImpl aliceEncounterManager =
+                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS());
+
+        // setup hub manager
+        ASAPHubManager aliceHubManager = ASAPHubManagerImpl.startASAPHubManager(aliceEncounterManager);
+
+        // connect with bulk import
+        aliceHubManager.connectASAPHubs(hubDescriptions, aliceSharkPeer.getASAPPeer(), true);
+        Thread.sleep(1000);
+
+        ///////////////////// connect to hub - Bob
+        // setup encounter manager with a connection handler
+        ASAPEncounterManagerImpl bobEncounterManager =
+                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS());
+
+        // setup hub manager
+        ASAPHubManager bobHubManager = ASAPHubManagerImpl.startASAPHubManager(bobEncounterManager);
+
+        // connect to hub - Bob
+        bobHubManager.connectASAPHubs(hubDescriptions, bobSharkPeer.getASAPPeer(), true);
+        Thread.sleep(1000);
+
+        // give them moment to exchange data
+        Thread.sleep(5000);
+        //Thread.sleep(Long.MAX_VALUE);
+        System.out.println("slept a moment");
+
+        // Bob received a message?
+        Assert.assertEquals(1, bobListener.counter);
+
+        // shut down
+        hub.kill();
+        aliceHubManager.kill();
+        bobHubManager.kill();
     }
 }

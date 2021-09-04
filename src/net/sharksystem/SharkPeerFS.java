@@ -8,7 +8,7 @@ import net.sharksystem.utils.Log;
 import java.io.IOException;
 import java.util.*;
 
-public class SharkPeerFS extends SharkPeerHubSupportImpl implements SharkPeer {
+public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
     protected final CharSequence owner;
     protected final CharSequence rootFolder;
     private HashMap<CharSequence, SharkComponentFactory> factories = new HashMap<>();
@@ -144,9 +144,9 @@ public class SharkPeerFS extends SharkPeerHubSupportImpl implements SharkPeer {
 
         this.status = SharkPeerStatus.RUNNING;
         if(fullSuccess) {
-            Log.writeLog(this, "Shark system started");
+            Log.writeLog(this, "shark system started");
         } else {
-            Log.writeLog(this, "Shark system started with errors.");
+            Log.writeLog(this, "shark system started with errors.");
         }
     }
 
@@ -161,14 +161,6 @@ public class SharkPeerFS extends SharkPeerHubSupportImpl implements SharkPeer {
     @Override
     public SharkPeerStatus getStatus() {
         return this.status;
-    }
-
-    public boolean samePeer(SharkPeer otherPeer) throws SharkException {
-        return this.getASAPPeer().samePeer(otherPeer.getASAPPeer());
-    }
-
-    public boolean samePeer(CharSequence otherPeerID) throws SharkException {
-        return this.getASAPPeer().samePeer(otherPeerID);
     }
 
     @Override

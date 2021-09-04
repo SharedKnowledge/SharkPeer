@@ -1,12 +1,9 @@
 package net.sharksystem;
 
 import net.sharksystem.asap.ASAPEncounterManager;
-import net.sharksystem.asap.ASAPEncounterManagerImpl;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.asap.utils.ASAPSerialization;
-import net.sharksystem.hub.peerside.ASAPHubManager;
-import net.sharksystem.hub.peerside.ASAPHubManagerImpl;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.HubConnectorFactory;
 import net.sharksystem.utils.Log;
@@ -18,13 +15,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SharkPeerHubSupportImpl implements SharkPeerHubSupport {
+public class SharkPeerBasicImpl implements SharkPeerBasic {
     private ASAPEncounterManager asapEncounterManager;
     private ASAPPeer asapPeer;
 
-    public SharkPeerHubSupportImpl() { }
+    public SharkPeerBasicImpl() { }
 
-    public SharkPeerHubSupportImpl(ASAPEncounterManager asapEncounterManager) {
+    public SharkPeerBasicImpl(ASAPEncounterManager asapEncounterManager) {
         this.asapEncounterManager = asapEncounterManager;
     }
 
@@ -32,7 +29,7 @@ public class SharkPeerHubSupportImpl implements SharkPeerHubSupport {
         this.restoreHubDescriptions();
     }
 
-    public SharkPeerHubSupportImpl(ASAPPeer asapPeer) {
+    public SharkPeerBasicImpl(ASAPPeer asapPeer) {
         this.asapPeer = asapPeer;
         this.init();
     }
@@ -52,6 +49,14 @@ public class SharkPeerHubSupportImpl implements SharkPeerHubSupport {
         return this.getASAPPeer().getPeerID();
     }
 
+
+    public boolean samePeer(SharkPeer otherPeer) throws SharkException {
+        return this.getASAPPeer().samePeer(otherPeer.getASAPPeer());
+    }
+
+    public boolean samePeer(CharSequence otherPeerID) throws SharkException {
+        return this.getASAPPeer().samePeer(otherPeerID);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                      hub description management                                       //

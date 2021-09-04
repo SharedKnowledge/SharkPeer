@@ -14,7 +14,7 @@ public class YourComponentImpl implements YourComponent, ASAPMessageReceivedList
 
     @Override
     public void onStart(ASAPPeer peer) throws SharkException {
-        System.out.println("component started");
+        System.out.println("YourComponent component started");
         // do something useful
 
         // remember this peer

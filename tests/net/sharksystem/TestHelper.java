@@ -11,6 +11,7 @@ public class TestHelper {
     public static final String MESSAGE = "Hi";
     public static final byte[] MESSAGE_BYTE = MESSAGE.getBytes();
     public static final String URI = "sn2://all";
+    public static final int MAX_IDLE_IN_SECONDS = 1;
 
     private static int testNumber = 0;
 
@@ -36,6 +37,11 @@ public class TestHelper {
     protected YourComponent claraComponent;
 
     private final String testName;
+
+    public static final String getUniqueFolderName(String foldername) {
+        System.out.println("test number == " + testNumber);
+        return foldername + "_" + testNumber;
+    }
 
     public TestHelper(String testName) {
         this.testName = testName;
