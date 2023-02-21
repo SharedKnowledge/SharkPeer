@@ -3,6 +3,7 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.apps.testsupport.ASAPTestPeerFS;
 import net.sharksystem.asap.engine.ASAPEngineFS;
+import net.sharksystem.utils.fs.FSUtils;
 
 import java.io.IOException;
 
@@ -20,6 +21,6 @@ public class SharkTestPeerFS extends SharkPeerFS {
     }
 
     public static void removeFolder(CharSequence folder) {
-        ASAPEngineFS.removeFolder(folder.toString());
+        FSUtils.removeFolder(folder.toString());
     }
 }

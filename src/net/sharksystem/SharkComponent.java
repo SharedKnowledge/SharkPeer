@@ -20,7 +20,7 @@ public interface SharkComponent {
      * Do not use any of those formats with your application
      */
     CharSequence[] reservedFormats = new CharSequence[]{
-            net.sharksystem.asap.management.ASAPManagementStorage.ASAP_CREATE_CHANNEL
+            //net.sharksystem.management.ASAPManagementStorage.ASAP_CREATE_CHANNEL
         };
 
 
