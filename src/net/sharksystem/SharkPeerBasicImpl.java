@@ -101,7 +101,7 @@ public class SharkPeerBasicImpl implements SharkPeerBasic {
     }
 
     @Override
-    public Collection<HubConnectorDescription> getHubDescriptions() {
+    public List<HubConnectorDescription> getHubDescriptions() {
         this.checkHubDescriptionsRestored();
         return this.hubConnectorDescriptions;
     }

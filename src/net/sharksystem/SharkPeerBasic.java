@@ -6,6 +6,7 @@ import net.sharksystem.hub.peerside.HubConnectorDescription;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,7 +19,7 @@ public interface SharkPeerBasic {
 
     void removeHubDescription(HubConnectorDescription hubConnectorDescription);
 
-    Collection<HubConnectorDescription> getHubDescriptions();
+    List<HubConnectorDescription> getHubDescriptions();
 
     HubConnectorDescription getHubDescription(int index) throws SharkException;
 
