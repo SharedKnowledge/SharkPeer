@@ -3,11 +3,12 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.apps.testsupport.ASAPTestPeerFS;
 import net.sharksystem.asap.engine.ASAPEngineFS;
+import net.sharksystem.serviceSide.SharkPeerFSServiceSide;
 import net.sharksystem.utils.fs.FSUtils;
 
 import java.io.IOException;
 
-public class SharkTestPeerFS extends SharkPeerFS {
+public class SharkTestPeerFS extends SharkPeerFSServiceSide {
     public SharkTestPeerFS(CharSequence owner, CharSequence rootFolder) {
         super(owner, rootFolder);
     }

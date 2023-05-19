@@ -1,8 +1,10 @@
 package net.sharksystem;
 
+import net.sharksystem.asap.ASAPConnectionHandler;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.asap.ASAPPeerFS;
+import net.sharksystem.serviceSide.SharkPeerFSServiceSide;
 import net.sharksystem.utils.Log;
 
 import java.io.IOException;
@@ -164,6 +166,13 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
     }
 
     @Override
+    public SharkConnectionManager getSharkConnectionManager() throws SharkException {
+        throw new SharkException("instantiate e.g. + "
+                + SharkPeerFSServiceSide.class.getSimpleName()
+                + "to get connection management support.");
+    }
+
+    @Override
     public ASAPPeer getASAPPeer() throws SharkException {
         if(this.status != SharkPeerStatus.RUNNING) {
             throw new SharkException("Shark Peer is not running");
@@ -176,5 +185,4 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
     public Set<CharSequence> getFormats() {
         return this.components.keySet();
     }
-
 }
