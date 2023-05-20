@@ -1,10 +1,7 @@
 package net.sharksystem;
 
-import net.sharksystem.asap.ASAPConnectionHandler;
 import net.sharksystem.asap.ASAPPeer;
-import net.sharksystem.hub.peerside.HubConnectorDescription;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -85,5 +82,4 @@ public interface SharkPeer extends SharkPeerBasic {
      * @return connection manager
      * @throws SharkException no manager present, e.g. because system is not yet launched
      */
-    SharkConnectionManager getSharkConnectionManager() throws SharkException;
 }
