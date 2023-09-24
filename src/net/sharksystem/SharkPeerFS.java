@@ -3,6 +3,7 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
 import net.sharksystem.asap.ASAPPeerFS;
+import net.sharksystem.asap.EncounterManagerAdmin;
 import net.sharksystem.utils.Log;
 
 import java.io.IOException;
@@ -148,6 +149,12 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
         } else {
             Log.writeLog(this, "shark system started with errors.");
         }
+    }
+
+    public void start(EncounterManagerAdmin encounterManagerAdmin,
+                      ASAPPeer asapPeer) throws SharkException {
+        this.start(asapPeer);
+        this.encounterManagerAdmin = encounterManagerAdmin;
     }
 
     @Override

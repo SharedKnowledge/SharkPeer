@@ -46,22 +46,12 @@ public class SharkComponentTests {
         System.out.println(DateFormat.getInstance().format(new Date(System.currentTimeMillis())));
     }
 
-    private YourComponent setupComponent(SharkPeer sharkPeer) throws SharkException {
-        // certificate component required
-        sharkPeer.addComponent(new YourComponentFactory(), YourComponent.class);
-        // get certificate component
-        YourComponent yourComponent =
-                (YourComponent) sharkPeer.getComponent(YourComponent.class);
-        return yourComponent;
-    }
-
-
     @Test
     public void sendAMessage() throws SharkException, ASAPException, IOException, InterruptedException {
         ////////////// setup Alice
         SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER);
         SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
-        YourComponent aliceComponent = this.setupComponent(aliceSharkPeer);
+        YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
         ExampleYourComponentListener aliceListener = new ExampleYourComponentListener();
         aliceComponent.subscribeYourComponentListener(aliceListener);
 
@@ -71,7 +61,7 @@ public class SharkComponentTests {
         ////////////// setup Bob
         SharkTestPeerFS.removeFolder(BOB_ROOTFOLDER);
         SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, BOB_ROOTFOLDER);
-        YourComponent bobComponent = this.setupComponent(bobSharkPeer);
+        YourComponent bobComponent = TestHelper.setupComponent(bobSharkPeer);
         ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
@@ -99,7 +89,7 @@ public class SharkComponentTests {
         ////////////// setup Alice
         SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER);
         SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
-        YourComponent aliceComponent = this.setupComponent(aliceSharkPeer);
+        YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
 
         // Start alice peer
         aliceSharkPeer.start();
@@ -110,7 +100,7 @@ public class SharkComponentTests {
 
         // relaunch
         aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
-        aliceComponent = this.setupComponent(aliceSharkPeer);
+        aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
 
         aliceSharkPeer.start();
 
@@ -141,7 +131,7 @@ public class SharkComponentTests {
         //////////////////////////////// setup Alice
         SharkTestPeerFS.removeFolder(aliceFolder);
         SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, aliceFolder);
-        YourComponent aliceComponent = this.setupComponent(aliceSharkPeer);
+        YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
         // start alice peer
         aliceSharkPeer.start();
 
@@ -149,7 +139,7 @@ public class SharkComponentTests {
         ////////////// setup Bob
         SharkTestPeerFS.removeFolder(bobFolder);
         SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, bobFolder);
-        YourComponent bobComponent = this.setupComponent(bobSharkPeer);
+        YourComponent bobComponent = TestHelper.setupComponent(bobSharkPeer);
         ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 

@@ -3,6 +3,7 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPEncounterManager;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
+import net.sharksystem.asap.EncounterManagerAdmin;
 import net.sharksystem.asap.utils.ASAPSerialization;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.HubConnectorFactory;
@@ -16,19 +17,20 @@ import java.util.Collection;
 import java.util.List;
 
 public class SharkPeerBasicImpl implements SharkPeerBasic {
-    private ASAPEncounterManager asapEncounterManager;
+    protected EncounterManagerAdmin encounterManagerAdmin;
     private ASAPPeer asapPeer;
 
     public SharkPeerBasicImpl() { }
-
-    public SharkPeerBasicImpl(ASAPEncounterManager asapEncounterManager) {
-        this.asapEncounterManager = asapEncounterManager;
-    }
 
     private void init() {
         this.restoreHubDescriptions();
     }
 
+    /**
+     * @deprecated An ASAPPeer should be presented when we start() a SharkPeer and
+     * <b>not during</b> its construction
+     * @param asapPeer
+     */
     public SharkPeerBasicImpl(ASAPPeer asapPeer) {
         this.asapPeer = asapPeer;
         this.init();
