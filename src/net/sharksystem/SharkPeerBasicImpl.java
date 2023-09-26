@@ -3,7 +3,7 @@ package net.sharksystem;
 import net.sharksystem.asap.ASAPEncounterManager;
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
-import net.sharksystem.asap.EncounterManagerAdmin;
+import net.sharksystem.asap.ASAPEncounterManagerAdmin;
 import net.sharksystem.asap.utils.ASAPSerialization;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.HubConnectorFactory;
@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class SharkPeerBasicImpl implements SharkPeerBasic {
-    protected EncounterManagerAdmin encounterManagerAdmin;
     private ASAPPeer asapPeer;
 
     public SharkPeerBasicImpl() { }
