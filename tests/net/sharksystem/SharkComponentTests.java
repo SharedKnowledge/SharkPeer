@@ -18,14 +18,13 @@ import java.util.Collection;
 import java.util.Date;
 
 public class SharkComponentTests {
-    static final CharSequence ALICE = "Alice";
-    static final CharSequence BOB = "Bob";
+    public static final CharSequence ALICE = "Alice";
+    public static final CharSequence BOB = "Bob";
     static final CharSequence ROOTFOLDER = "sharkComponent";
-    static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE;
-    static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB;
+    public static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE;
+    public static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB;
     static final String YOUR_APP_NAME = "yourAppName";
-    static final String YOUR_URI = "yourSchema://example";
-
+    public static final String YOUR_URI = "yourSchema://example";
     @Test
     public void usage1() throws SharkException, IOException, ASAPException {
         SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER); // clean previous version before

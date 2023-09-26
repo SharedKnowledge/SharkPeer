@@ -1,5 +1,6 @@
-package net.sharksystem;
+package net.sharksystem.lsan;
 
+import net.sharksystem.*;
 import net.sharksystem.asap.*;
 import net.sharksystem.asap.apps.TCPServerSocketAcceptor;
 import net.sharksystem.lsan.LSAN;
@@ -14,11 +15,16 @@ import java.net.Socket;
 import static net.sharksystem.SharkComponentTests.*;
 
 public class LargeScaleAdhocNetworkTests {
-    /**
-     * Setup two peer witth their encounter manager. Run an encounter.
-     */
-    @Test
-    public void aliceMeetsBob() throws SharkException, ASAPException, IOException, InterruptedException {
+    public static YourComponent aliceComponent;
+    private YourComponent bobComponent;
+    private LSAN aliceLSAN;
+    private LSAN bobLSAN;
+    private ASAPEncounterManagerImpl aliceEncounterManager;
+    private ASAPEncounterManagerImpl bobEncounterManager;
+    private ExampleYourComponentListener bobListener;
+
+
+    public void setup() throws SharkException, IOException, InterruptedException {
         // setup
         String aliceFolder = TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
         String bobFolder = TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
@@ -30,11 +36,11 @@ public class LargeScaleAdhocNetworkTests {
         SharkPeerFS aliceSharkPeer = new SharkPeerFS(ALICE, aliceFolder);
 
         // create a shark component as an example
-        YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
+        aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
 
         // set large scale ad hoc network component
         aliceSharkPeer.addComponent(new LSANFactory(), LSAN.class);
-        LSAN aliceLSAN = (LSAN) aliceSharkPeer.getComponent(LSAN.class);
+        aliceLSAN = (LSAN) aliceSharkPeer.getComponent(LSAN.class);
 
         // now, create an ASAPPeer
         ASAPPeerFS aliceASAPPeerFS = new ASAPPeerFS(ALICE, aliceFolder, aliceSharkPeer.getSupportedFormats());
@@ -45,8 +51,7 @@ public class LargeScaleAdhocNetworkTests {
         /* now we have a running asap peer and - one or more Shark components running and
         waiting for incoming messages. No, lets set up an encounter manager on alice side.
          */
-        ASAPEncounterManagerImpl aliceEncounterManager =
-                new ASAPEncounterManagerImpl(aliceASAPPeerFS);
+        aliceEncounterManager = new ASAPEncounterManagerImpl(aliceASAPPeerFS);
 
         /* system is up and running. Now, our LargeScaleNetwork component
         needs access to our encounter manager. Hand it over
@@ -56,16 +61,23 @@ public class LargeScaleAdhocNetworkTests {
         ////////////// setup Bob - same routine
         SharkTestPeerFS.removeFolder(bobFolder);
         SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, bobFolder);
-        YourComponent bobComponent = TestHelper.setupComponent(bobSharkPeer);
-        ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
+        bobComponent = TestHelper.setupComponent(bobSharkPeer);
+        bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
         bobSharkPeer.addComponent(new LSANFactory(), LSAN.class);
-        LSAN bobLSAN = (LSAN) bobSharkPeer.getComponent(LSAN.class);
+        bobLSAN = (LSAN) bobSharkPeer.getComponent(LSAN.class);
         ASAPPeerFS bobASAPPeerFS = new ASAPPeerFS(BOB, bobFolder, bobSharkPeer.getSupportedFormats());
         bobSharkPeer.start(bobASAPPeerFS);
-        ASAPEncounterManagerImpl bobEncounterManager = new ASAPEncounterManagerImpl(bobASAPPeerFS);
+        bobEncounterManager = new ASAPEncounterManagerImpl(bobASAPPeerFS);
         bobLSAN.addEncounterManagerAdmin(bobEncounterManager);
+    }
+    /**
+     * Setup two peer with their encounter manager. Run an encounter.
+     */
+    @Test
+    public void aliceSendsBroadcast() throws SharkException, ASAPException, IOException, InterruptedException {
+        this.setup();
 
         // Alice sends a message
         aliceComponent.sendBroadcastMessage(YOUR_URI, "Hi there");
