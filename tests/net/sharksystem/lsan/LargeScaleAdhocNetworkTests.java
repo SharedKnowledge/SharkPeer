@@ -40,6 +40,7 @@ public class LargeScaleAdhocNetworkTests {
         String aliceFolder = TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
         String bobFolder = TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
         String claraFolder = TestHelper.getUniqueFolderName(CLARA_ROOTFOLDER.toString());
+
         net.sharksystem.utils.testsupport.TestHelper.incrementTestNumber();
 
         //////////////////////////////// setup Alice
