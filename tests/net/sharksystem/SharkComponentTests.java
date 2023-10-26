@@ -20,9 +20,12 @@ import java.util.Date;
 public class SharkComponentTests {
     public static final CharSequence ALICE = "Alice";
     public static final CharSequence BOB = "Bob";
+
+    public static final CharSequence CLARA = "Clara";
     static final CharSequence ROOTFOLDER = "sharkComponent";
     public static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE;
     public static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB;
+    public static final CharSequence CLARA_ROOTFOLDER = ROOTFOLDER + "/" + CLARA;
     static final String YOUR_APP_NAME = "yourAppName";
     public static final String YOUR_URI = "yourSchema://example";
     @Test
@@ -151,7 +154,7 @@ public class SharkComponentTests {
         ///////////////////// connect to hub - Alice
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl aliceEncounterManager =
-                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS());
+                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS(),ALICE);
 
         // setup hub manager
         ASAPHubManager aliceHubManager = ASAPHubManagerImpl.createASAPHubManager(aliceEncounterManager);
@@ -163,7 +166,7 @@ public class SharkComponentTests {
         ///////////////////// connect to hub - Bob
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl bobEncounterManager =
-                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS());
+                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(), BOB);
 
         // setup hub manager
         ASAPHubManager bobHubManager = ASAPHubManagerImpl.createASAPHubManager(bobEncounterManager);
