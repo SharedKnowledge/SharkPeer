@@ -22,10 +22,14 @@ public class SharkComponentTests {
     public static final CharSequence BOB = "Bob";
 
     public static final CharSequence CLARA = "Clara";
+
+    public static final CharSequence DAVE = "Dave";
     static final CharSequence ROOTFOLDER = "sharkComponent";
     public static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE;
     public static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB;
     public static final CharSequence CLARA_ROOTFOLDER = ROOTFOLDER + "/" + CLARA;
+
+    public static final CharSequence DAVE_ROOTFOLDER = ROOTFOLDER + "/" + DAVE;
 
     static final String YOUR_APP_NAME = "yourAppName";
     public static final String YOUR_URI = "yourSchema://example";
