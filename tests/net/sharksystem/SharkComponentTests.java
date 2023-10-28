@@ -151,7 +151,7 @@ public class SharkComponentTests {
         ///////////////////// connect to hub - Alice
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl aliceEncounterManager =
-                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS());
+                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS(),ALICE);
 
         // setup hub manager
         ASAPHubManager aliceHubManager = ASAPHubManagerImpl.createASAPHubManager(aliceEncounterManager);
@@ -163,7 +163,7 @@ public class SharkComponentTests {
         ///////////////////// connect to hub - Bob
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl bobEncounterManager =
-                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS());
+                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(),BOB);
 
         // setup hub manager
         ASAPHubManager bobHubManager = ASAPHubManagerImpl.createASAPHubManager(bobEncounterManager);
