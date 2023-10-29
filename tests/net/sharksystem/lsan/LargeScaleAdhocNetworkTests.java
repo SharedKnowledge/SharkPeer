@@ -11,17 +11,33 @@ import java.io.IOException;
 import java.net.Socket;
 
 import static net.sharksystem.SharkComponentTests.*;
-import static net.sharksystem.utils.testsupport.TestConstants.ALICE_ID;
-import static net.sharksystem.utils.testsupport.TestConstants.BOB_ID;
+import static net.sharksystem.utils.testsupport.TestConstants.*;
 
 public class LargeScaleAdhocNetworkTests {
     public static YourComponent aliceComponent;
     private YourComponent bobComponent;
+    private YourComponent claraComponent;
+
+    private YourComponent daveComponent;
     private LSAN aliceLSAN;
     private LSAN bobLSAN;
+
+    private LSAN claraLSAN;
+
+    private LSAN daveLSAN;
     private ASAPEncounterManagerImpl aliceEncounterManager;
     private ASAPEncounterManagerImpl bobEncounterManager;
+
+    private ASAPEncounterManagerImpl claraEncounterManager;
+
+    private ASAPEncounterManagerImpl daveEncounterManager;
     private ExampleYourComponentListener bobListener;
+
+    private ExampleYourComponentListener claraListener;
+
+    private ExampleYourComponentListener daveListener;
+
+    private ExampleYourComponentListener aliceListener;
 
     public static final String TESTFOLDER_NAME = "lsanTests/";
 
@@ -30,6 +46,9 @@ public class LargeScaleAdhocNetworkTests {
         // setup
         String aliceFolder = TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
         String bobFolder = TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
+        String claraFolder = TestHelper.getUniqueFolderName(CLARA_ROOTFOLDER.toString());
+        String daveFolder = TestHelper.getUniqueFolderName(DAVE_ROOTFOLDER.toString());
+
         net.sharksystem.utils.testsupport.TestHelper.incrementTestNumber();
 
         //////////////////////////////// setup Alice
@@ -40,6 +59,10 @@ public class LargeScaleAdhocNetworkTests {
 
         // create a shark component as an example
         aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
+
+        ////////////// Setup Alice Listener
+        aliceListener = new ExampleYourComponentListener();
+        aliceComponent.subscribeYourComponentListener(aliceListener);
 
         // set large scale ad hoc network component
         aliceSharkPeer.addComponent(new LSANFactory(), LSAN.class);
@@ -74,6 +97,55 @@ public class LargeScaleAdhocNetworkTests {
         bobSharkPeer.start(bobASAPPeerFS);
         bobEncounterManager = new ASAPEncounterManagerImpl(bobASAPPeerFS, BOB_ID);
         bobLSAN.addEncounterManagerAdmin(bobEncounterManager);
+
+
+        /////////////////////////--------------- setup Clara -----------------////////////////////////////////
+
+
+        SharkTestPeerFS.removeFolder(claraFolder);
+        SharkTestPeerFS claraSharkPeer = new SharkTestPeerFS(CLARA_ID, claraFolder);
+        claraComponent = TestHelper.setupComponent(claraSharkPeer);
+
+        ////////////// Setup Clara Listener
+        claraListener = new ExampleYourComponentListener();
+        claraComponent.subscribeYourComponentListener(claraListener);
+
+        ////////////// set large scale ad hoc network component for Clara
+        claraSharkPeer.addComponent(new LSANFactory(), LSAN.class);
+        claraLSAN = (LSAN) claraSharkPeer.getComponent(LSAN.class);
+
+        ////////////// Create an ASAPPeer for Clara - take supported format from Shark peer
+        ASAPPeerFS claraASAPPeerFS = new ASAPPeerFS(CLARA_ID, claraFolder, claraSharkPeer.getSupportedFormats());
+        ////////////// start Clara shark peer
+        claraSharkPeer.start(claraASAPPeerFS);
+
+        ////////////// Setup Clara Encounter Manager
+        claraEncounterManager = new ASAPEncounterManagerImpl(claraASAPPeerFS, CLARA_ID);
+        claraLSAN.addEncounterManagerAdmin(claraEncounterManager);
+
+        /////////////////////////--------------- setup Dave -----------------////////////////////////////////
+
+
+        SharkTestPeerFS.removeFolder(daveFolder);
+        SharkTestPeerFS daveSharkPeer = new SharkTestPeerFS(DAVID_ID, daveFolder);
+        daveComponent = TestHelper.setupComponent(daveSharkPeer);
+
+        ////////////// Setup Dave Listener
+        daveListener = new ExampleYourComponentListener();
+        daveComponent.subscribeYourComponentListener(daveListener);
+
+        ////////////// set large scale ad hoc network component for Dave
+        daveSharkPeer.addComponent(new LSANFactory(), LSAN.class);
+        daveLSAN = (LSAN) daveSharkPeer.getComponent(LSAN.class);
+
+        ////////////// Create an ASAPPeer for Dave - take supported format from Shark peer
+        ASAPPeerFS daveASAPPeerFS = new ASAPPeerFS(DAVID_ID, daveFolder, daveSharkPeer.getSupportedFormats());
+        ////////////// start Dave shark peer
+        daveSharkPeer.start(daveASAPPeerFS);
+
+        ////////////// Setup Dave Encounter Manager
+        daveEncounterManager = new ASAPEncounterManagerImpl(daveASAPPeerFS, DAVID_ID);
+        daveLSAN.addEncounterManagerAdmin(daveEncounterManager);
     }
     /**
      * Setup two peer with their encounter manager. Run an encounter.
@@ -87,11 +159,14 @@ public class LargeScaleAdhocNetworkTests {
 
         //// create an actual connection
         int alicePort = TestHelper.getPortNumber(); // in unit test always a good idea to choose a fresh port
+        int alicePort2 = TestHelper.getPortNumber();
 
         // offer a port on alice side
         new TCPServerSocketAcceptor(alicePort, aliceEncounterManager);
-        // connect to it
         Socket connect2Alice = new Socket("localhost", alicePort);
+
+        new TCPServerSocketAcceptor(alicePort2, aliceEncounterManager);
+        Socket connect2Alice2 = new Socket("localhost", alicePort2);
 
         // handle to encounter manager on bob side
         bobEncounterManager.handleEncounter(
@@ -99,12 +174,47 @@ public class LargeScaleAdhocNetworkTests {
                 connect2Alice.getInputStream(), connect2Alice.getOutputStream(), ALICE_ID, ALICE_ID),
                 ASAPEncounterConnectionType.INTERNET);
 
+        // connect B and C
+        Thread.sleep(100);
+        int bobPort = TestHelper.getPortNumber();
+        new TCPServerSocketAcceptor(bobPort, bobEncounterManager);
+        Socket connect2Bob= new Socket("localhost", bobPort);
+        claraEncounterManager.handleEncounter(
+                StreamPairImpl.getStreamPair(
+                        connect2Bob.getInputStream(), connect2Bob.getOutputStream(), BOB_ID, BOB_ID),
+                ASAPEncounterConnectionType.INTERNET);
+
+        // connect D with C and A
+        Thread.sleep(100);
+        int claraPort = TestHelper.getPortNumber();
+        new TCPServerSocketAcceptor(claraPort, claraEncounterManager);
+        Socket connect2Clara= new Socket("localhost", claraPort);
+        daveEncounterManager.handleEncounter(
+                StreamPairImpl.getStreamPair(
+                        connect2Clara.getInputStream(), connect2Clara.getOutputStream(), CLARA_ID, CLARA_ID),
+                ASAPEncounterConnectionType.INTERNET);
+
+        Thread.sleep(100);
+        daveEncounterManager.handleEncounter(
+                StreamPairImpl.getStreamPair(
+                        connect2Alice2.getInputStream(), connect2Alice2.getOutputStream(), ALICE_ID, ALICE_ID),
+                ASAPEncounterConnectionType.INTERNET);
+
+
+
         // give it a moment to exchange data
         Thread.sleep(500);
         //Thread.sleep(Long.MAX_VALUE);
         System.out.println("slept a moment");
+        System.out.println(aliceEncounterManager.getConnectedPeerIDs());
 
         // Bob received a message?
         Assert.assertEquals(1, bobListener.counter);
+        // Clara received a message?
+        Assert.assertEquals(1, claraListener.counter);
+
+        Assert.assertEquals(1, daveListener.counter);
+
+        Assert.assertEquals(0, aliceListener.counter);
     }
 }
