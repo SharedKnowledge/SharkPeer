@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import static net.sharksystem.SharkComponentTests.*;
 import static net.sharksystem.utils.testsupport.TestConstants.*;
@@ -20,6 +21,7 @@ public class LargeScaleAdhocNetworkTests {
 
     private YourComponent daveComponent;
     private LSAN aliceLSAN;
+
     private LSAN bobLSAN;
 
     private LSAN claraLSAN;
@@ -41,9 +43,59 @@ public class LargeScaleAdhocNetworkTests {
 
     public static final String TESTFOLDER_NAME = "lsanTests/";
 
+//    public void setupPeer(String name, CharSequence rootFolder, String peerId, YourComponent component, LSAN lsan, CharSequence asapName, ASAPEncounterManagerImpl em) throws SharkException, IOException, InterruptedException {
+//        String peerFolder = TestHelper.getUniqueFolderName(rootFolder.toString());
+//
+//        //////////////////////////////// setup Peer
+//        SharkTestPeerFS.removeFolder(peerFolder); // clean folder from previous tests
+//
+//        // create shark peer instance to represent this peer
+//        SharkPeerFS sharkPeer = new SharkPeerFS(peerId, peerFolder);
+//
+//        // create a shark component as an example
+//        component = TestHelper.setupComponent(sharkPeer);
+//
+//        // set large scale ad hoc network component
+//        sharkPeer.addComponent(new LSANFactory(), LSAN.class);
+//        lsan = (LSAN) sharkPeer.getComponent(LSAN.class);
+//
+//        // now, create an ASAPPeer - take supported format from Shark peer
+//        ASAPPeerFS ASAPPeerFS = new ASAPPeerFS(asapName, peerFolder, sharkPeer.getSupportedFormats());
+//
+//        // start alice shark peer
+//        sharkPeer.start(ASAPPeerFS);
+//
+//        /* now we have a running asap peer and - one or more Shark components running and
+//        waiting for incoming messages. No, lets set up an encounter manager on alice side.
+//         */
+//        em = new ASAPEncounterManagerImpl(ASAPPeerFS, peerId);
+//
+//        /* system is up and running. Now, our LargeScaleNetwork component
+//        needs access to our encounter manager. Hand it over
+//         */
+//        aliceLSAN.addEncounterManagerAdmin(aliceEncounterManager);
+//    }
 
+//    public void setupListener(ExampleYourComponentListener listener, YourComponent component){
+//        ////////////// Setup Listener
+//        listener = new ExampleYourComponentListener();
+//        component.subscribeYourComponentListener(listener);
+//    }
     public void setup() throws SharkException, IOException, InterruptedException {
         // setup
+
+//        setupPeer("alice", ALICE_ROOTFOLDER, ALICE_ID, aliceComponent, aliceLSAN, ALICE, aliceEncounterManager);
+//        setupListener(aliceListener, aliceComponent);
+//
+//        setupPeer("bob", BOB_ROOTFOLDER, BOB_ID, bobComponent, bobLSAN, BOB, bobEncounterManager);
+//        setupListener(bobListener, bobComponent);
+//
+//        setupPeer("clara", CLARA_ROOTFOLDER, CLARA_ID, claraComponent, claraLSAN, CLARA, claraEncounterManager);
+//        setupListener(claraListener, claraComponent);
+//
+//        setupPeer("dave", DAVE_ROOTFOLDER, DAVID_ID, daveComponent, daveLSAN, DAVE, daveEncounterManager);
+//        setupListener(daveListener, daveComponent);
+
         String aliceFolder = TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
         String bobFolder = TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
         String claraFolder = TestHelper.getUniqueFolderName(CLARA_ROOTFOLDER.toString());
@@ -150,6 +202,18 @@ public class LargeScaleAdhocNetworkTests {
     /**
      * Setup two peer with their encounter manager. Run an encounter.
      */
+    public void connectPeers(ASAPEncounterManagerImpl em1, ASAPEncounterManagerImpl em2, String peerId) throws SharkException, IOException, InterruptedException {
+        int em1Port = TestHelper.getPortNumber();
+
+        new TCPServerSocketAcceptor(em1Port, em1);
+        Socket connect2Em1 = new Socket("localhost", em1Port);
+
+        em2.handleEncounter(
+                StreamPairImpl.getStreamPair(
+                        connect2Em1.getInputStream(), connect2Em1.getOutputStream(), peerId, peerId),
+                ASAPEncounterConnectionType.INTERNET);
+    }
+
     @Test
     public void aliceSendsBroadcast() throws SharkException, ASAPException, IOException, InterruptedException {
         this.setup();
@@ -157,49 +221,17 @@ public class LargeScaleAdhocNetworkTests {
         // Alice sends a message
         aliceComponent.sendBroadcastMessage(YOUR_URI, "Hi there");
 
-        //// create an actual connection
-        int alicePort = TestHelper.getPortNumber(); // in unit test always a good idea to choose a fresh port
-        int alicePort2 = TestHelper.getPortNumber();
-
-        // offer a port on alice side
-        new TCPServerSocketAcceptor(alicePort, aliceEncounterManager);
-        Socket connect2Alice = new Socket("localhost", alicePort);
-
-        new TCPServerSocketAcceptor(alicePort2, aliceEncounterManager);
-        Socket connect2Alice2 = new Socket("localhost", alicePort2);
-
-        // handle to encounter manager on bob side
-        bobEncounterManager.handleEncounter(
-            StreamPairImpl.getStreamPair(
-                connect2Alice.getInputStream(), connect2Alice.getOutputStream(), ALICE_ID, ALICE_ID),
-                ASAPEncounterConnectionType.INTERNET);
-
+        // connect A and B
+        connectPeers(aliceEncounterManager, bobEncounterManager, ALICE_ID);
+        Thread.sleep(100);
         // connect B and C
+        connectPeers(bobEncounterManager, claraEncounterManager, BOB_ID);
         Thread.sleep(100);
-        int bobPort = TestHelper.getPortNumber();
-        new TCPServerSocketAcceptor(bobPort, bobEncounterManager);
-        Socket connect2Bob= new Socket("localhost", bobPort);
-        claraEncounterManager.handleEncounter(
-                StreamPairImpl.getStreamPair(
-                        connect2Bob.getInputStream(), connect2Bob.getOutputStream(), BOB_ID, BOB_ID),
-                ASAPEncounterConnectionType.INTERNET);
-
-        // connect D with C and A
+        // connect C and D
+        connectPeers(claraEncounterManager, daveEncounterManager, CLARA_ID);
         Thread.sleep(100);
-        int claraPort = TestHelper.getPortNumber();
-        new TCPServerSocketAcceptor(claraPort, claraEncounterManager);
-        Socket connect2Clara= new Socket("localhost", claraPort);
-        daveEncounterManager.handleEncounter(
-                StreamPairImpl.getStreamPair(
-                        connect2Clara.getInputStream(), connect2Clara.getOutputStream(), CLARA_ID, CLARA_ID),
-                ASAPEncounterConnectionType.INTERNET);
-
-        Thread.sleep(100);
-        daveEncounterManager.handleEncounter(
-                StreamPairImpl.getStreamPair(
-                        connect2Alice2.getInputStream(), connect2Alice2.getOutputStream(), ALICE_ID, ALICE_ID),
-                ASAPEncounterConnectionType.INTERNET);
-
+        // connect A and D  **(Cycle connection)**
+        connectPeers(aliceEncounterManager, daveEncounterManager, ALICE_ID);
 
 
         // give it a moment to exchange data
