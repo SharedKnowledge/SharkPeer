@@ -7,48 +7,52 @@ import net.sharksystem.asap.apps.testsupport.ASAPTestPeerFS;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironmentChangesListener {
     private ASAPPeer asapPeer;
-
-//    private byte[] isAdmin=new byte[knowPeers.size()+1];
+    List<ASAPPeer> onlineDevices = new ArrayList<>();
     CharSequence adminValue="";
     private ASAPEncounterManagerAdmin emAdmin;
+    private int noConnection = 0;
 
     @Override
     public void onStart(ASAPPeer peer) throws SharkException {
-        System.out.println("welcom new LSAN component");
-        knowPeers.add(peer);
-//        isAdmin[0]=true;
-        System.out.println();
+        System.out.println("welcome new LSAN component");
+//        knowPeers.add(peer);
+        if(peer.toString().equals("Alice")){
+            nodes.put("Alice_42",this);
+            isVisited.put("Alice_42",false);
+        }
+        else {
+            nodes.put(peer.toString(), this);
+            isVisited.put(peer.toString(), false);
 
+        }
         System.out.println("the charset is "+knowPeers.toString() );
-        System.out.println("First PEER IN THE NETWORK IS"+ knowPeers.get(0).toString());
+        System.out.println("NODES ARE : "+ nodes);
         // do something useful
 
         // remember this peer
         this.asapPeer = peer;
         this.adminValue=this.asapPeer.toString();
-        try{
-            if(adminValue.equals(knowPeers.get(0).toString())){
-                this.asapPeer.putExtra(adminValue,"true".getBytes());
-                byte[] valueBack=this.asapPeer.getExtra(adminValue);
-                String s=new String(valueBack);
-                System.out.println("THIS IS ADMIN "+s);
-            }
-            else{
-                this.asapPeer.putExtra(adminValue,"false".getBytes());
-                byte[] valueBack=this.asapPeer.getExtra(adminValue);
-                String s=new String(valueBack);
-                System.out.println("THIS IS NOT ADMIN "+s);
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try{
+//            if(adminValue.equals(knowPeers.get(0).toString())){
+//                this.asapPeer.putExtra(adminValue,"true".getBytes());
+//                byte[] valueBack=this.asapPeer.getExtra(adminValue);
+//                String s=new String(valueBack);
+//                System.out.println("THIS IS ADMIN "+s);
+//            }
+//            else{
+//                this.asapPeer.putExtra(adminValue,"false".getBytes());
+//                byte[] valueBack=this.asapPeer.getExtra(adminValue);
+//                String s=new String(valueBack);
+//                System.out.println("THIS IS NOT ADMIN "+s);
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         //listen for changing connections
         this.asapPeer.addASAPEnvironmentChangesListener(this);
         // listen to message type A
@@ -61,6 +65,7 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
         this.emAdmin = emAdmin;
 
         System.out.println("CONNECTED");
+        System.out.println(this.emAdmin.getConnectedPeerIDs().toString());
     }
 
     @Override
@@ -68,19 +73,21 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
         // TODO. Example can be found in YourComponentImpl in test folder
     }
 
-    public void removeCyclic (){
-System.out.println("IN REMOVE CYCLIC");
-this.emAdmin.cancelConnection("David");
+    // map (name -> id)
+    // map (id -> name)
 
-    }
 
     @Override
     public void onlinePeersChanged(Set<CharSequence> peerList) {
-        // peer list has changed - maybe there is a new peer around
+        noConnection++;
+        System.out.println(this.asapPeer.toString()+" HAS "+noConnection+" CONNECTIONS");
+//        System.out.println("ALERT");
+//        System.out.println(this.emAdmin.getConnectedPeerIDs().toString());
+////         peer list has changed - maybe there is a new peer around
 //        for(CharSequence maybeNewPeerName : peerList) {
 //            System.out.println("PEERLIST IS: "+peerList.toString());
 //            CharSequence newPeerName = maybeNewPeerName;
-//            for (ASAPPeer peerName : this.knowPeers) {
+//            for (ASAPPeer peerName : knowPeers) {
 //                if(maybeNewPeerName.toString().equalsIgnoreCase(peerName.toString())) {
 //                    newPeerName = null; // not new
 //                    System.out.println("NOT A NEW PEER");
@@ -88,38 +95,54 @@ this.emAdmin.cancelConnection("David");
 //                }
 //            }
 //            if(newPeerName != null) {
+//                knowPeers.add((ASAPPeer) maybeNewPeerName);
 //                // found one - enough for this example
-//                this.doSomethingWith(newPeerName); // example
+//                System.out.println("new peeer has joined: "+newPeerName);;
+//                System.out.println(knowPeers);
 //                break;
 //            }
 //        }
 
-//        try {
-//            this.asapPeer.putExtra(adminValue,isAdmin);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        } catch (ASAPException e) {
-//            throw new RuntimeException(e);
-//        }
-        byte[] valueBack= new byte[0];
-        try {
-            valueBack = this.asapPeer.getExtra(this.adminValue);
-        } catch (ASAPException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//   System.out.println("PEER List is "+ peerList.toString());
+        if(noConnection>1){
+            isVisited.replaceAll((k, v) -> false);
+            removeCyclic("Alice_42","-1");
         }
-        String s=new String(valueBack);
-        System.out.println("CONNECTION CHANGE, ADMIN STATUS: "+ s);
-        if(s.equals("true")){
-            this.removeCyclic();
+
+
+        
+//
+////        System.out.println("FINISHED");
+//        System.out.println(this.asapPeer+" is connected to"+this.emAdmin.getConnectedPeerIDs().toString());
+//        System.out.println(nodes.get(knowPeers.get(0).toString()).emAdmin.getConnectedPeerIDs().toString());
+//
+//        System.out.println("that is it ");
+    }
+
+    public synchronized void removeCyclic (CharSequence curr, CharSequence prev){
+        System.out.println("IN REMOVE CYCLIC, TURN IS ON "+ curr);
+        CharSequence[] connected= (CharSequence[]) nodes.get(curr).emAdmin.getConnectedPeerIDs().toArray(new CharSequence[0]);
+        System.out.println("CONNECTED PEERS TO "+curr+" ARE"+Arrays.toString(connected));
+        if (isVisited.get(curr)&&!prev.equals("-1")) {
+            // remove edge(dont know what to write in the arguments of the cancel connection)
+//            this.emAdmin.cancelConnection("David");
+
+            System.out.println(prev+"SHOULD CANCEL CONNECTION TO "+ curr);
+            // You can add the removeEdge functionality here
+            return;
         }
-        else{
-            System.out.println("DONT EXECUTE PROTOCOL");
+        isVisited.put(curr,true);
+//        System.out.println(connected);
+        for (CharSequence child : connected) {
+            System.out.println("CHILD IS: "+ child);
+            System.out.println("PREV IS: "+ prev);
+
+            System.out.println(!child.equals(prev));
+            if (!child.equals(prev)) {
+                removeCyclic(child, curr);
+            }
         }
-        System.out.println("THERE IS A CHANGE");
-        System.out.println(this.asapPeer+" is connected to"+this.emAdmin.getConnectedPeerIDs().toString());
-        System.out.println("that is it ");
+
     }
 
     private void doSomethingWith(CharSequence newPeerName) {

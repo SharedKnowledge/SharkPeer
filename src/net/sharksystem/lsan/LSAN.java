@@ -15,6 +15,11 @@ public interface LSAN extends SharkComponent {
     String APP_FORMAT_MIME = "application/x-lsan";
 //    Set<ASAPPeer> knowPeers = new HashSet<>();
 List<ASAPPeer> knowPeers = new ArrayList<>();
+int c=0;
+HashMap<CharSequence,Boolean> isVisited=new HashMap<>();
+
+    HashMap<CharSequence,LSANImpl> nodes=new HashMap<>();
+
 
     void addEncounterManagerAdmin(ASAPEncounterManagerAdmin emAdmin);
 }
