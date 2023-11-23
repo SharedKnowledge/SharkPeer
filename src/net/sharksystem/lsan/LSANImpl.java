@@ -79,34 +79,14 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
 
     @Override
     public void onlinePeersChanged(Set<CharSequence> peerList) {
-        noConnection++;
+        System.out.println("NEW NOTFICATION");
+        noConnection=this.emAdmin.getConnectedPeerIDs().size();
         System.out.println(this.asapPeer.toString()+" HAS "+noConnection+" CONNECTIONS");
-//        System.out.println("ALERT");
-//        System.out.println(this.emAdmin.getConnectedPeerIDs().toString());
-////         peer list has changed - maybe there is a new peer around
-//        for(CharSequence maybeNewPeerName : peerList) {
-//            System.out.println("PEERLIST IS: "+peerList.toString());
-//            CharSequence newPeerName = maybeNewPeerName;
-//            for (ASAPPeer peerName : knowPeers) {
-//                if(maybeNewPeerName.toString().equalsIgnoreCase(peerName.toString())) {
-//                    newPeerName = null; // not new
-//                    System.out.println("NOT A NEW PEER");
-//                    break; // found in my known peers list, try next in peerList
-//                }
-//            }
-//            if(newPeerName != null) {
-//                knowPeers.add((ASAPPeer) maybeNewPeerName);
-//                // found one - enough for this example
-//                System.out.println("new peeer has joined: "+newPeerName);;
-//                System.out.println(knowPeers);
-//                break;
-//            }
-//        }
 
-//   System.out.println("PEER List is "+ peerList.toString());
         if(noConnection>1){
             isVisited.replaceAll((k, v) -> false);
-            removeCyclic("Alice_42","-1");
+            System.out.println("FUNCTION CALLED");
+            removeCyclic(this.asapPeer.toString(),"-1");
         }
 
 
@@ -123,23 +103,31 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
         System.out.println("IN REMOVE CYCLIC, TURN IS ON "+ curr);
         CharSequence[] connected= (CharSequence[]) nodes.get(curr).emAdmin.getConnectedPeerIDs().toArray(new CharSequence[0]);
         System.out.println("CONNECTED PEERS TO "+curr+" ARE"+Arrays.toString(connected));
-        if (isVisited.get(curr)&&!prev.equals("-1")) {
+        if (isVisited.get(curr)&&!prev.equals("-1")&&nodes.get(prev).emAdmin.getConnectedPeerIDs().contains(curr)) {
             // remove edge(dont know what to write in the arguments of the cancel connection)
 //            this.emAdmin.cancelConnection("David");
 
             System.out.println(prev+"SHOULD CANCEL CONNECTION TO "+ curr);
-            // You can add the removeEdge functionality here
-            return;
-        }
-        isVisited.put(curr,true);
-//        System.out.println(connected);
-        for (CharSequence child : connected) {
-            System.out.println("CHILD IS: "+ child);
-            System.out.println("PREV IS: "+ prev);
+            nodes.get(prev).emAdmin.cancelConnection(curr);
+            nodes.get(curr).emAdmin.cancelConnection(prev);
+//            nodes.get(curr).emAdmin.getConnectedPeerIDs().remove(prev);
+            nodes.get(prev).emAdmin.getConnectedPeerIDs().remove(curr);
 
-            System.out.println(!child.equals(prev));
-            if (!child.equals(prev)) {
-                removeCyclic(child, curr);
+            nodes.get(curr).emAdmin.cancelConnection(prev);
+            // You can add the removeEdge functionality here
+
+        }
+        else{
+
+            isVisited.put(curr,true);
+//        System.out.println(connected);
+            for (CharSequence child : connected) {
+                System.out.println("CHILD IS: "+ child);
+                System.out.println("PREV IS: "+ prev);
+
+                if (!child.equals(prev)) {
+                    removeCyclic(child, curr);
+                }
             }
         }
 
