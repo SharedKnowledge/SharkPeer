@@ -79,33 +79,13 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
 
     @Override
     public void onlinePeersChanged(Set<CharSequence> peerList) {
-        noConnection++;
+        System.out.println("NEW NOTFICATION");
+        noConnection=this.emAdmin.getConnectedPeerIDs().size();
         System.out.println(this.asapPeer.toString()+" HAS "+noConnection+" CONNECTIONS");
-//        System.out.println("ALERT");
-//        System.out.println(this.emAdmin.getConnectedPeerIDs().toString());
-////         peer list has changed - maybe there is a new peer around
-//        for(CharSequence maybeNewPeerName : peerList) {
-//            System.out.println("PEERLIST IS: "+peerList.toString());
-//            CharSequence newPeerName = maybeNewPeerName;
-//            for (ASAPPeer peerName : knowPeers) {
-//                if(maybeNewPeerName.toString().equalsIgnoreCase(peerName.toString())) {
-//                    newPeerName = null; // not new
-//                    System.out.println("NOT A NEW PEER");
-//                    break; // found in my known peers list, try next in peerList
-//                }
-//            }
-//            if(newPeerName != null) {
-//                knowPeers.add((ASAPPeer) maybeNewPeerName);
-//                // found one - enough for this example
-//                System.out.println("new peeer has joined: "+newPeerName);;
-//                System.out.println(knowPeers);
-//                break;
-//            }
-//        }
 
-//   System.out.println("PEER List is "+ peerList.toString());
         if(noConnection>1){
             isVisited.replaceAll((k, v) -> false);
+            System.out.println("FUNCTION CALLED");
             removeCyclic(this.asapPeer.toString(),"-1");
         }
 
