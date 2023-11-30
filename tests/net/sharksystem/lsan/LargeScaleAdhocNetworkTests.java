@@ -5,11 +5,13 @@ import net.sharksystem.asap.*;
 import net.sharksystem.asap.apps.TCPServerSocketAcceptor;
 import net.sharksystem.utils.streams.StreamPairImpl;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Set;
 
 import static net.sharksystem.SharkComponentTests.*;
 import static net.sharksystem.utils.testsupport.TestConstants.*;
@@ -76,12 +78,14 @@ public class LargeScaleAdhocNetworkTests {
 //        aliceLSAN.addEncounterManagerAdmin(aliceEncounterManager);
 //    }
 
-//    public void setupListener(ExampleYourComponentListener listener, YourComponent component){
+    //    public void setupListener(ExampleYourComponentListener listener, YourComponent component){
 //        ////////////// Setup Listener
 //        listener = new ExampleYourComponentListener();
 //        component.subscribeYourComponentListener(listener);
 //    }
+    @Before
     public void setup() throws SharkException, IOException, InterruptedException {
+        System.out.println("***********************************SETUP************************************************************");
         // setup
 
 //        setupPeer("alice", ALICE_ROOTFOLDER, ALICE_ID, aliceComponent, aliceLSAN, ALICE, aliceEncounterManager);
@@ -216,8 +220,6 @@ public class LargeScaleAdhocNetworkTests {
 
     @Test
     public void aliceSendsBroadcast() throws SharkException, ASAPException, IOException, InterruptedException {
-        this.setup();
-
         // Alice sends a message
         aliceComponent.sendBroadcastMessage(YOUR_URI, "Hi there");
 
@@ -248,5 +250,127 @@ public class LargeScaleAdhocNetworkTests {
         Assert.assertEquals(1, daveListener.counter);
 
         Assert.assertEquals(0, aliceListener.counter);
+    }
+
+    public void setupScenario(String[] connections) throws SharkException, IOException, InterruptedException {
+        for(int i = 0; i < connections.length; i++){
+            String[] peers = connections[i].split("-");
+            ASAPEncounterManagerImpl peer1 = null;
+            String peer1_ID = null;
+            ASAPEncounterManagerImpl peer2 = null;
+            switch (peers[0]){
+                case "A":
+                    peer1 = aliceEncounterManager;
+                    peer1_ID = ALICE_ID;
+                    break;
+                case "B":
+                    peer1 = bobEncounterManager;
+                    peer1_ID = BOB_ID;
+                    break;
+                case "C":
+                    peer1 = claraEncounterManager;
+                    peer1_ID = CLARA_ID;
+                    break;
+                case "D":
+                    peer1 = daveEncounterManager;
+                    peer1_ID = DAVID_ID;
+                    break;
+            }
+            switch (peers[1]){
+                case "A":
+                    peer2 = aliceEncounterManager;
+                    break;
+                case "B":
+                    peer2 = bobEncounterManager;
+                    break;
+                case "C":
+                    peer2 = claraEncounterManager;
+                    break;
+                case "D":
+                    peer2 = daveEncounterManager;
+                    break;
+            }
+            if(peer1 != null && peer2 != null && peer1_ID != null && !peer1.getConnectedPeerIDs().contains(peer2.toString())){
+                connectPeers(peer1, peer2, peer1_ID);
+            }
+        }
+        System.out.println("hello this is after test");
+        System.out.println(claraEncounterManager.getConnectedPeerIDs());
+
+    }
+
+    @Test
+    public void testScenario() throws SharkException, ASAPException, IOException, InterruptedException{
+        String[] connections = {"A-B", "B-C", "C-A"};
+        setupScenario(connections);
+    }
+
+    @Test
+    public void shouldCutOneCycle() throws SharkException, ASAPException, IOException, InterruptedException {
+        String[] connections = {"A-B", "B-C", "C-A"};
+        setupScenario(connections);
+
+        Assert.assertEquals(1, aliceEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertEquals(2, bobEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertEquals(1, claraEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertFalse(aliceEncounterManager.getConnectedPeerIDs().contains("Clara_44"));
+    }
+    @Test
+    public void shouldCutMultipleCycles() throws SharkException, ASAPException, IOException, InterruptedException {
+        // connect A and B
+        connectPeers(aliceEncounterManager, bobEncounterManager, ALICE_ID);
+        Thread.sleep(100);
+        // connect B and C
+        connectPeers(bobEncounterManager, claraEncounterManager, BOB_ID);
+        Thread.sleep(100);
+        // connect C and A
+        connectPeers(claraEncounterManager, aliceEncounterManager, CLARA_ID);
+        Thread.sleep(100);
+        // connect C and D
+        connectPeers(claraEncounterManager, daveEncounterManager, CLARA_ID);
+        Thread.sleep(100);
+        // connect D and B
+        connectPeers(daveEncounterManager, bobEncounterManager, DAVID_ID);
+        Thread.sleep(100);
+        // connect D and A
+        connectPeers(daveEncounterManager, aliceEncounterManager, DAVID_ID);
+        Thread.sleep(100);
+
+        Set<CharSequence> aliceConnections = aliceEncounterManager.getConnectedPeerIDs();
+        Set<CharSequence> daveConnections = daveEncounterManager.getConnectedPeerIDs();
+        System.out.println(daveConnections);
+
+        // A should not connect to C and D directly
+        Assert.assertFalse(aliceConnections.contains("Clara_44") || aliceConnections.contains("David_45"));
+        // D should not connect to A and B directly
+        Assert.assertFalse(daveConnections.contains("Bob_43"));
+        // (A) - B
+        Assert.assertEquals(1, aliceConnections.size());
+        // A - (B) - C
+        Assert.assertEquals(2, bobEncounterManager.getConnectedPeerIDs().size());
+        // B - (C) - D
+        Assert.assertEquals(2, claraEncounterManager.getConnectedPeerIDs().size());
+        // (D) - C
+        Assert.assertEquals(1, daveEncounterManager.getConnectedPeerIDs().size());
+
+        Assert.assertTrue(aliceConnections.contains("Bob_43"));
+        Assert.assertTrue(bobEncounterManager.getConnectedPeerIDs().contains("Alice_42") && bobEncounterManager.getConnectedPeerIDs().contains("Clara_44"));
+        Assert.assertTrue(claraEncounterManager.getConnectedPeerIDs().contains("Bob_43") && claraEncounterManager.getConnectedPeerIDs().contains("David_45"));
+        Assert.assertTrue(daveEncounterManager.getConnectedPeerIDs().contains("Clara_44"));
+
+    }
+    @Test
+    public void nonCyclicGraph() throws SharkException, ASAPException, IOException, InterruptedException {
+        // connect A and B
+        connectPeers(aliceEncounterManager, bobEncounterManager, ALICE_ID);
+        Thread.sleep(100);
+        // connect B and C
+        connectPeers(bobEncounterManager, claraEncounterManager, BOB_ID);
+        Thread.sleep(100);
+
+        Assert.assertEquals(1, aliceEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertEquals(2, bobEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertEquals(1, claraEncounterManager.getConnectedPeerIDs().size());
+        Assert.assertFalse(aliceEncounterManager.getConnectedPeerIDs().size() > 1);
     }
 }

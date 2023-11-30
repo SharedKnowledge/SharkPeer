@@ -106,7 +106,7 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
 //   System.out.println("PEER List is "+ peerList.toString());
         if(noConnection>1){
             isVisited.replaceAll((k, v) -> false);
-            removeCyclic("Alice_42","-1");
+            removeCyclic(this.asapPeer.toString(),"-1");
         }
 
 
@@ -123,23 +123,31 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
         System.out.println("IN REMOVE CYCLIC, TURN IS ON "+ curr);
         CharSequence[] connected= (CharSequence[]) nodes.get(curr).emAdmin.getConnectedPeerIDs().toArray(new CharSequence[0]);
         System.out.println("CONNECTED PEERS TO "+curr+" ARE"+Arrays.toString(connected));
-        if (isVisited.get(curr)&&!prev.equals("-1")) {
+        if (isVisited.get(curr)&&!prev.equals("-1")&&nodes.get(prev).emAdmin.getConnectedPeerIDs().contains(curr)) {
             // remove edge(dont know what to write in the arguments of the cancel connection)
 //            this.emAdmin.cancelConnection("David");
 
             System.out.println(prev+"SHOULD CANCEL CONNECTION TO "+ curr);
-            // You can add the removeEdge functionality here
-            return;
-        }
-        isVisited.put(curr,true);
-//        System.out.println(connected);
-        for (CharSequence child : connected) {
-            System.out.println("CHILD IS: "+ child);
-            System.out.println("PREV IS: "+ prev);
+            nodes.get(prev).emAdmin.cancelConnection(curr);
+            nodes.get(curr).emAdmin.cancelConnection(prev);
+//            nodes.get(curr).emAdmin.getConnectedPeerIDs().remove(prev);
+            nodes.get(prev).emAdmin.getConnectedPeerIDs().remove(curr);
 
-            System.out.println(!child.equals(prev));
-            if (!child.equals(prev)) {
-                removeCyclic(child, curr);
+            nodes.get(curr).emAdmin.cancelConnection(prev);
+            // You can add the removeEdge functionality here
+
+        }
+        else{
+
+            isVisited.put(curr,true);
+//        System.out.println(connected);
+            for (CharSequence child : connected) {
+                System.out.println("CHILD IS: "+ child);
+                System.out.println("PREV IS: "+ prev);
+
+                if (!child.equals(prev)) {
+                    removeCyclic(child, curr);
+                }
             }
         }
 
