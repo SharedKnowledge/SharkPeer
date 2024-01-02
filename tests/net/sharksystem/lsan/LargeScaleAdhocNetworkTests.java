@@ -107,7 +107,7 @@ public class LargeScaleAdhocNetworkTests {
         SharkTestPeerFS.removeFolder(aliceFolder); // clean folder from previous tests
 
         // create shark peer instance to represent alice
-        SharkPeerFS aliceSharkPeer = new SharkPeerFS(ALICE_ID, aliceFolder);
+        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE_ID, aliceFolder);
 
         // create a shark component as an example
         aliceComponent = TestHelper.setupComponent(aliceSharkPeer);

@@ -13,10 +13,11 @@ import java.util.*;
 public interface LSAN extends SharkComponent {
     String APP_FORMAT = "lsan://formatA";
     String APP_FORMAT_MIME = "application/x-lsan";
-//    Set<ASAPPeer> knowPeers = new HashSet<>();
-List<ASAPPeer> knowPeers = new ArrayList<>();
-HashMap<CharSequence,Boolean> isVisited=new HashMap<>();
+   Set<ASAPPeer> network = new HashSet<>();
+//List<ASAPPeer> knowPeers = new ArrayList<>();
+    HashMap<CharSequence,Boolean> boolList=new HashMap<>();
 
+ASAPPeer admin = null;
     HashMap<CharSequence,LSANImpl> nodes=new HashMap<>();
 
 
