@@ -9,11 +9,6 @@ import org.junit.Assert;
 public class TestAssertions {
     private Map<String, ASAPEncounterManagerImpl> nodes;
     int maxConnections;
-
-//    public TestAssertions(Map<String, ASAPEncounterManagerImpl> nodes, int maxConnections){
-//        this.nodes = nodes;
-//        this.maxConnections = maxConnections;
-//    }
     public TestAssertions(CustomGraph customGraph, int maxConnections){
         this.nodes = customGraph.nodes;
         this.maxConnections = maxConnections;
@@ -34,11 +29,6 @@ public class TestAssertions {
 
         return node.getConnectedPeerIDs().size() < maxConnections;
     }
-    private boolean hasNeighbors(String nodeName){
-        ASAPEncounterManagerImpl node = nodes.get(nodeName);
-
-        return !node.getConnectedPeerIDs().isEmpty();
-    }
     private boolean hasTheseNeighbors(String nodeName, String neighbors){
         String[] neighborNames = neighbors.split(",");
         for(int i =0; i< neighborNames.length; i++){
@@ -47,6 +37,19 @@ public class TestAssertions {
             }
         }
         return true;
+    }
+    private List<String> findMissingOrUnexpectedNeighbors(String nodeName, String neighbors, boolean shouldHaveNeighbors){
+        String[] neighborNames = neighbors.split(",");
+        List<String> missingOrUnexpectedNeighbors = new ArrayList<>();
+
+        for (int i = 0; i < neighborNames.length; i++) {
+            boolean isConnected = isConnected(nodeName, neighborNames[i]);
+            if ((shouldHaveNeighbors && !isConnected) || (!shouldHaveNeighbors && isConnected)) {
+                missingOrUnexpectedNeighbors.add(neighborNames[i]);
+            }
+        }
+
+        return missingOrUnexpectedNeighbors;
     }
     private boolean isGraphConnected(){
         Set<String> visitedNodes = new HashSet<>();
@@ -99,6 +102,9 @@ public class TestAssertions {
         }
         return result;
     }
+    private int getNumberOfRedundantConnections(){
+        return numberOfEdges() - (nodes.size()-1);
+    }
     private int nodeDegree(String nodeName){
         ASAPEncounterManagerImpl node = nodes.get(nodeName);
 
@@ -126,10 +132,6 @@ public class TestAssertions {
     private int shortestPathLength(String startNodeName, String endNodeName) {
         ASAPEncounterManagerImpl startNode = nodes.get(startNodeName);
         ASAPEncounterManagerImpl endNode = nodes.get(endNodeName);
-
-//        if (startNode == null || endNode == null) {
-//            return -1; // Return -1 or throw an exception if start or end node does not exist
-//        }
 
         Queue<String> queue = new LinkedList<>();
         Set<String> visited = new HashSet<>();
@@ -236,10 +238,17 @@ public class TestAssertions {
         return articulationPoints.isEmpty();
     }
 
-    private boolean isStarNode(String nodeName){
-        ASAPEncounterManagerImpl node = nodes.get(nodeName);
-
-        return numberOfEdges() == nodes.size()-1;
+    private boolean isStarGraph(){
+        int numberOfEdges = numberOfEdges();
+        if(numberOfEdges != nodes.size()-1){
+            return false;
+        }
+        for(ASAPEncounterManagerImpl node : nodes.values()){
+            if(node.getConnectedPeerIDs().size() == numberOfEdges){
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean possibleArticulationPoints(String[] possibleArticulationPoints) {
@@ -257,8 +266,14 @@ public class TestAssertions {
 
         return false;
     }
-
-
+    private boolean isKRegular(int k){
+        for(ASAPEncounterManagerImpl node : nodes.values()){
+            if(node.getConnectedPeerIDs().size() != k){
+                return false;
+            }
+        }
+        return true;
+    }
 
 
     public void assertNodeConnected(String nodeName1, String nodeName2){
@@ -273,18 +288,13 @@ public class TestAssertions {
     public void assertNodeCannotAcceptConnections(String nodeName){
         Assert.assertFalse("Node " + nodeName + " should not be able to accept more connections.", canAcceptConnections(nodeName));
     }
-    public void assertNodeHasNeighbors(String nodeName){
-        Assert.assertTrue(hasNeighbors(nodeName));
-    }
-    public void assertNodeHasNoNeighbors(String nodeName){
-        Assert.assertFalse(hasNeighbors(nodeName));
-    }
-
     public void assertNodeHasTheseNeighbors(String nodeName, String neighbors){
-        Assert.assertTrue("Node " + nodeName + " should have these neighbors: " + neighbors, hasTheseNeighbors(nodeName, neighbors));
+        List<String> missingOrUnexpectedNeighbors = findMissingOrUnexpectedNeighbors(nodeName, neighbors, true);
+        Assert.assertTrue("Node " + nodeName + " should have these neighbors: " + neighbors + ". Incorrect neighbors: " + missingOrUnexpectedNeighbors, missingOrUnexpectedNeighbors.isEmpty());
     }
     public void assertNodeDoesNotHaveTheseNeighbors(String nodeName, String neighbors){
-        Assert.assertFalse("Node " + nodeName + " should not have these neighbors: " + neighbors,hasTheseNeighbors(nodeName, neighbors));
+        List<String> missingOrUnexpectedNeighbors = findMissingOrUnexpectedNeighbors(nodeName, neighbors, false);
+        Assert.assertTrue("Node " + nodeName + " should not have these neighbors: " + neighbors + ". Unexpected neighbors: " + missingOrUnexpectedNeighbors, missingOrUnexpectedNeighbors.isEmpty());
     }
 
     public void assertGraphIsConnected(){
@@ -301,24 +311,28 @@ public class TestAssertions {
         Assert.assertFalse("Graph should be acyclic.", isCyclic());
     }
 
+    public void assertEqualNumberOfRedundantConnections(int redundantConnections){
+        Assert.assertEquals("Number of redundant connections should be: " + redundantConnections, redundantConnections, getNumberOfRedundantConnections());
+    }
+
     public void assertEqualDegree(String nodeName, int degree){
-        Assert.assertEquals("Node " + nodeName + " should have a degree of " + degree, degree, nodeDegree(nodeName));
+        Assert.assertEquals("Node " + nodeName + " should have a degree of " + degree + ". Actual degree: " + nodeDegree(nodeName), degree, nodeDegree(nodeName));
     }
     public void assertNotEqualDegree(String nodeName, int degree){
-        Assert.assertNotEquals("Node " + nodeName + " should not have a degree of " + degree, degree, nodeDegree(nodeName));
+        Assert.assertNotEquals("Node " + nodeName + " should not have a degree of " + degree + ". Actual degree: " + nodeDegree(nodeName), degree, nodeDegree(nodeName));
     }
     public void assertEqualAvgAvailableConnections(double avg){
-        Assert.assertEquals(avg, averageNoOfAvailableConnections(), 1e-6);
+        Assert.assertEquals("Average number of available connections should be " + avg, avg, averageNoOfAvailableConnections(), 1e-6);
     }
     public void assertShortestPathLength(String nodeName1, String nodeName2, int expectedLength){
         int actualLength = shortestPathLength(nodeName1, nodeName2);
-        Assert.assertEquals(expectedLength, actualLength);
+        Assert.assertEquals("Shortest path from " + nodeName1 + " to " + nodeName2 + " should be: " + expectedLength, expectedLength, actualLength);
     }
     public void assertEqualNumberOfEdgesCutOff(List<String> edges, int desiredCount){
-        Assert.assertTrue(exactNumberOfEdgesCutOff(edges, desiredCount));
+        Assert.assertTrue("Graph should have " + desiredCount + " edges removed out of these edges: " + edges, exactNumberOfEdgesCutOff(edges, desiredCount));
     }
     public void assertEqualNumberOfEdges(int numberOfEdges){
-        Assert.assertEquals(numberOfEdges, numberOfEdges());
+        Assert.assertEquals("Number of edges should be " + numberOfEdges, numberOfEdges, numberOfEdges());
     }
 
     public void assertEqualArticulationPoints(String points){
@@ -330,21 +344,25 @@ public class TestAssertions {
 
         Assert.assertArrayEquals(expectedPointsArray, actualPointsArray);
     }
+    public void assertPossibleArticulationPoints(String[] articulationPoints){
+        Assert.assertTrue("Graph should have articulation points out of these possibilities: " + articulationPoints, possibleArticulationPoints(articulationPoints));
+    }
     public void assertGraphIsBiConnected(){
-        Assert.assertTrue(isBiConnected());
+        Assert.assertTrue("Graph should be Biconnected", isBiConnected());
     }
     public void assertGraphIsNotBiConnected(){
-        Assert.assertFalse(isBiConnected());
+        Assert.assertFalse("Graph should not be Biconnected", isBiConnected());
     }
-    public void assertStarNode(String nodeName){
-        Assert.assertTrue(isStarNode(nodeName));
+    public void assertStarGraph(){
+        Assert.assertTrue("Graph should have star structure", isStarGraph());
     }
-    public void assertNotStarNode(String nodeName){
-        Assert.assertFalse(isStarNode(nodeName));
+    public void assertNotStarGraph(){
+        Assert.assertFalse("Graph should not have star structure", isStarGraph());
     }
-    public void assertPossibleArticulationPoints(String[] articulationPoints){
-        Assert.assertTrue(possibleArticulationPoints(articulationPoints));
+    public void assertGraphIsKRegular(int k){
+        Assert.assertTrue("Graph should be " + k + "-Regular", isKRegular(k));
     }
+
 
 
 }
