@@ -16,10 +16,9 @@ import java.util.Map;
 
 public class PatternGraph {
     int numberOfNodes;
-    int numberOfNodesToConnectAround;
-//    ArrayList<ASAPEncounterManagerImpl> nodes = new ArrayList<ASAPEncounterManagerImpl>();
     ConnectionPattern connectionPattern;
     Map<String, ASAPEncounterManagerImpl> nodes = new HashMap<String, ASAPEncounterManagerImpl>();
+    private static final String LOCALHOST = "localhost";
 
 
     public PatternGraph(int numberOfNodes, ConnectionPattern connectionPattern){
@@ -59,7 +58,7 @@ public class PatternGraph {
                     // connect
                     int port = TestHelper.getPortNumber();
                     new TCPServerSocketAcceptor(port, nodes.get(nodeName+i));
-                    Socket connect2Node = new Socket("localhost", port);
+                    Socket connect2Node = new Socket(LOCALHOST, port);
                     nodes.get(nodeName+targetNodeIndex).handleEncounter(
                             StreamPairImpl.getStreamPair(
                                     connect2Node.getInputStream(), connect2Node.getOutputStream(), nodes.get(nodeName+i).toString(), nodes.get(nodeName+i).toString()),
@@ -68,23 +67,4 @@ public class PatternGraph {
             }
         }
     }
-//    private void connectGraph()  throws SharkException, IOException, InterruptedException{
-//        String nodeName = "node";
-//        for(int i = 0; i< nodes.size(); i++){
-//            int k = i+1;
-//            for(int j =0; j< numberOfNodesToConnectAround; j++){
-//                if(k < nodes.size()){
-//                    // connect
-//                    int port = TestHelper.getPortNumber();
-//                    new TCPServerSocketAcceptor(port, nodes.get(nodeName+i));
-//                    Socket connect2Node = new Socket("localhost", port);
-//                    nodes.get(nodeName+k).handleEncounter(
-//                            StreamPairImpl.getStreamPair(
-//                                    connect2Node.getInputStream(), connect2Node.getOutputStream(), nodes.get(nodeName+i).toString(), nodes.get(nodeName+i).toString()),
-//                            ASAPEncounterConnectionType.INTERNET);
-//                    k++;
-//                }
-//            }
-//        }
-//    }
 }
