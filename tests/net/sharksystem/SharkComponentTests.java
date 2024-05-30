@@ -1,15 +1,19 @@
 package net.sharksystem;
 
-import net.sharksystem.asap.ASAPEncounterManagerImpl;
-import net.sharksystem.asap.ASAPException;
+import net.sharksystem.asap.*;
+import net.sharksystem.asap.apps.TCPServerSocketAcceptor;
 import net.sharksystem.asap.utils.DateTimeHelper;
 import net.sharksystem.hub.hubside.ASAPTCPHub;
 import net.sharksystem.hub.peerside.ASAPHubManager;
 import net.sharksystem.hub.peerside.ASAPHubManagerImpl;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.TCPHubConnectorDescriptionImpl;
+import java.net.Socket;
 import org.junit.Assert;
 import org.junit.Test;
+
+import net.sharksystem.utils.streams.StreamPairImpl;
+
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -53,36 +57,95 @@ public class SharkComponentTests {
         System.out.println(DateFormat.getInstance().format(new Date(System.currentTimeMillis())));
     }
 
-    @Test
-    public void sendAMessage() throws SharkException, ASAPException, IOException, InterruptedException {
+    SharkTestPeerFS aliceSharkPeer, bobSharkPeer;
+    YourComponent aliceComponent, bobComponent;
+    ExampleYourComponentListener aliceListener, bobListener;
+
+    private void setUpAndStartAliceAndBob() throws SharkException {
         ////////////// setup Alice
-        SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER);
-        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
-        YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
-        ExampleYourComponentListener aliceListener = new ExampleYourComponentListener();
+        String folderName = net.sharksystem.utils.testsupport.TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
+        SharkTestPeerFS.removeFolder(folderName);
+
+        System.out.println("alice uses folder " + folderName);
+        aliceSharkPeer = new SharkTestPeerFS(ALICE, folderName);
+        aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
+        aliceListener = new ExampleYourComponentListener();
         aliceComponent.subscribeYourComponentListener(aliceListener);
 
         // Start alice peer
         aliceSharkPeer.start();
 
         ////////////// setup Bob
-        SharkTestPeerFS.removeFolder(BOB_ROOTFOLDER);
-        SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, BOB_ROOTFOLDER);
-        YourComponent bobComponent = TestHelper.setupComponent(bobSharkPeer);
-        ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
+        folderName = net.sharksystem.utils.testsupport.TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
+        SharkTestPeerFS.removeFolder(folderName);
+        System.out.println("bob uses folder " + folderName);
+        bobSharkPeer = new SharkTestPeerFS(BOB, folderName);
+        bobComponent = TestHelper.setupComponent(bobSharkPeer);
+        bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
         // Start bob peer
         bobSharkPeer.start();
 
+    }
+
+    @Test
+    public void sendAMessage() throws SharkException, ASAPException, IOException, InterruptedException {
+        this.setUpAndStartAliceAndBob();
         // Bob sends a broadcast on format A
         bobComponent.sendBroadcastMessage(YOUR_URI, "Hi all listeners of A");
 
         ///////////////////////////////// Test specific code - make an encounter Alice Bob
-        aliceSharkPeer.getASAPTestPeerFS().startEncounter(7777, bobSharkPeer.getASAPTestPeerFS());
+        aliceSharkPeer.getASAPTestPeerFS().startEncounter(TestHelper.getPortNumber(), bobSharkPeer.getASAPTestPeerFS());
 
         // give them moment to exchange data
-        Thread.sleep(2000);
+        Thread.sleep(200);
+        //Thread.sleep(Long.MAX_VALUE);
+        System.out.println("slept a moment");
+
+        ////////////////////////////////// test if anything was ok.
+        // Alice should have received Bob broadcast on format A but nothing on format B
+        Assert.assertEquals(1, aliceListener.counter);
+    }
+
+    @Test
+    public void sendAMessageUseEncounterManager() throws SharkException, ASAPException, IOException, InterruptedException {
+        this.setUpAndStartAliceAndBob();
+        // Bob sends a broadcast on format A
+        bobComponent.sendBroadcastMessage(YOUR_URI, "Hi all listeners of A");
+
+        ///////////////////////////////// setup with encounter manager
+        ASAPConnectionHandler aliceConnectionHandler = (ASAPConnectionHandler) aliceSharkPeer.getASAPPeer();
+        ASAPEncounterManager aliceEncounterManager =
+                new ASAPEncounterManagerImpl(aliceConnectionHandler, aliceSharkPeer.getPeerID());
+
+        ASAPConnectionHandler bobConnectionHandler = (ASAPConnectionHandler) bobSharkPeer.getASAPPeer();
+        ASAPEncounterManager bobEncounterManager =
+                new ASAPEncounterManagerImpl(bobConnectionHandler, bobSharkPeer.getPeerID());
+
+        ////////////////////////// set up server socket and handle connection requests
+        int portNumberAlice = TestHelper.getPortNumber();
+        TCPServerSocketAcceptor aliceTcpServerSocketAcceptor =
+                new TCPServerSocketAcceptor(portNumberAlice, aliceEncounterManager);
+
+        int portNumberBob = TestHelper.getPortNumber();
+        TCPServerSocketAcceptor bobTcpServerSocketAcceptor =
+                new TCPServerSocketAcceptor(portNumberBob, bobEncounterManager);
+
+        // give it a moment to settle
+        Thread.sleep(5);
+
+        // now, both side wait for connection establishment. Example
+
+        // open connection to Bob
+        Socket socket = new Socket("localhost", portNumberBob);
+
+        aliceEncounterManager.handleEncounter(
+                StreamPairImpl.getStreamPair(socket.getInputStream(), socket.getOutputStream()),
+                ASAPEncounterConnectionType.INTERNET);
+
+        // give them moment to exchange data
+        Thread.sleep(200);
         //Thread.sleep(Long.MAX_VALUE);
         System.out.println("slept a moment");
 
