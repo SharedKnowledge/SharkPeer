@@ -37,6 +37,8 @@ public interface SharkPeerBasic {
      */
     byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException;
 
+    void addSharkPeerEncounterChangedListener(SharkPeerEncounterChangedListener sharkPeerEncounterChangedListener) throws SharkException;
+
 
     /**
      * @return reference to the ASAPPeer object. It is a good idea to use this interface to get that reference

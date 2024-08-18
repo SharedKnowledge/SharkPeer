@@ -1,9 +1,6 @@
 package net.sharksystem;
 
-import net.sharksystem.asap.ASAPEncounterManager;
-import net.sharksystem.asap.ASAPException;
-import net.sharksystem.asap.ASAPPeer;
-import net.sharksystem.asap.ASAPEncounterManagerAdmin;
+import net.sharksystem.asap.*;
 import net.sharksystem.asap.utils.ASAPSerialization;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.HubConnectorFactory;
@@ -12,11 +9,9 @@ import net.sharksystem.utils.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public class SharkPeerBasicImpl implements SharkPeerBasic {
+public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChangesListener {
     private ASAPPeer asapPeer;
 
     public SharkPeerBasicImpl() { }
@@ -186,4 +181,68 @@ public class SharkPeerBasicImpl implements SharkPeerBasic {
         return this.asapPeer.getExtra(key);
     }
 
+    private Set<SharkPeerEncounterChangedListener> sharkPeerEncounterChangedListenerSet = new HashSet<>();
+    boolean listenEnvironmentChange = false;
+    @Override
+    public void addSharkPeerEncounterChangedListener(
+            SharkPeerEncounterChangedListener sharkPeerEncounterChangedListener) throws SharkException {
+        this.sharkPeerEncounterChangedListenerSet.add(sharkPeerEncounterChangedListener);
+        if(!this.listenEnvironmentChange) {
+            this.getASAPPeer().addASAPEnvironmentChangesListener(this);
+        }
+    }
+
+    public void removeSharkPeerEncounterChangedListener(
+            SharkPeerEncounterChangedListener sharkPeerEncounterChangedListener) {
+        this.sharkPeerEncounterChangedListenerSet.remove(sharkPeerEncounterChangedListener);
+
+        if(this.sharkPeerEncounterChangedListenerSet.isEmpty()) {
+            this.previousEncounterList = null;
+            this.asapPeer.removeASAPEnvironmentChangesListener(this);
+        }
+    }
+
+    // listen to environment changes in ASAP peer
+    private Set<CharSequence> previousEncounterList = null;
+    @Override
+    public void onlinePeersChanged(Set<CharSequence> newEncounterList) {
+        if(this.sharkPeerEncounterChangedListenerSet.isEmpty()) {
+            this.previousEncounterList = null;
+            return;
+        }
+
+        if(this.previousEncounterList == null) {
+            this.previousEncounterList = newEncounterList; // got first encounter list
+            this.notifyAboutEncounter(newEncounterList, true);
+            return;
+        }
+
+        // check what changed
+        Set<CharSequence> lostIDs;
+        Set<CharSequence> addedIDs = new HashSet<>();
+
+        for(CharSequence idFromNewList : newEncounterList) {
+            if(!this.previousEncounterList.contains(idFromNewList)) { // it is new
+                addedIDs.add(idFromNewList);
+            } else {
+                // was already in there - remove it
+                this.previousEncounterList.remove(idFromNewList);
+            }
+        }
+        this.notifyAboutEncounter(addedIDs, true);
+        this.notifyAboutEncounter(this.previousEncounterList, false);
+    }
+
+    private void notifyAboutEncounter(Set<CharSequence> changedIDs, boolean added) {
+        for(CharSequence changedID : changedIDs) {
+            for (SharkPeerEncounterChangedListener listener : this.sharkPeerEncounterChangedListenerSet) {
+                (new Thread() {
+                    public void run() {
+                        if(added) listener.encounterStarted(changedID);
+                        else listener.encounterTerminated(changedID);
+                    }
+                }).start();
+            }
+        }
+    }
 }
