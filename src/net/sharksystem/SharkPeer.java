@@ -17,6 +17,8 @@ import java.util.Set;
  * @see ASAPPeer
  */
 public interface SharkPeer extends SharkPeerBasic {
+    String ANONYMOUS_SHARK_NAME =  "noSharkName";
+
     /**
      * Add a component to the Shark app
      * @param componentFactory
@@ -55,7 +57,7 @@ public interface SharkPeer extends SharkPeerBasic {
      * components. Components can neither be added nor withdrawn after launch.
      * @throws SharkException Exception can only be caused by ASAP peer launch
      */
-    void start() throws SharkException;
+    void start(CharSequence peerID) throws SharkException;
 
     /**
      * Start the Shark peer. An ASAP peer will be launched with listening to all format from all

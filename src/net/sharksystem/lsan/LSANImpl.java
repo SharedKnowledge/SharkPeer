@@ -1,6 +1,7 @@
 package net.sharksystem.lsan;
 
 import net.sharksystem.SharkException;
+import net.sharksystem.SharkPeer;
 import net.sharksystem.asap.*;
 import net.sharksystem.asap.apps.testsupport.ASAPTestPeerFS;
 
@@ -8,6 +9,7 @@ import java.io.*;
 import java.util.*;
 
 public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironmentChangesListener {
+    private final SharkPeer sharkPeer;
     private ASAPPeer asapPeer;
     List<ASAPPeer> onlineDevices = new ArrayList<>();
     CharSequence adminValue="";
@@ -22,6 +24,10 @@ public class LSANImpl implements LSAN, ASAPMessageReceivedListener,ASAPEnvironme
 
 //    List<String> redundant= new ArrayList<>();
     private int noConnection = 0;
+
+    public LSANImpl(SharkPeer sharkPeer) {
+        this.sharkPeer = sharkPeer;
+    }
 
     @Override
     public void onStart(ASAPPeer peer) throws SharkException {

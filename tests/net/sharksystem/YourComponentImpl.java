@@ -9,8 +9,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class YourComponentImpl implements YourComponent, ASAPMessageReceivedListener {
+    private final SharkPeer sharkPeer;
     private List<YourComponentListener> listenerList = new ArrayList<>();
     private ASAPPeer asapPeer;
+
+    public YourComponentImpl(SharkPeer sharkPeer) {
+        this.sharkPeer = sharkPeer;
+    }
 
     @Override
     public void onStart(ASAPPeer peer) throws SharkException {

@@ -7,14 +7,24 @@ import java.io.IOException;
 import java.util.*;
 
 public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
-    protected final CharSequence owner;
     protected final CharSequence rootFolder;
     private HashMap<CharSequence, SharkComponentFactory> factories = new HashMap<>();
     protected HashMap<CharSequence, SharkComponent> components = new HashMap<>();
     private SharkPeerStatus status = SharkPeerStatus.NOT_INITIALIZED;
 
-    public SharkPeerFS(CharSequence owner, CharSequence rootFolder) {
-        this.owner = owner;
+    /**
+     * Create the Shark peer as a shell - no asap peer inside yet
+     */
+    public SharkPeerFS(CharSequence rootFolder) {
+        this.rootFolder = rootFolder;
+    }
+
+    /**
+     * Create the Shark peer as a shell - no asap peer inside yet
+     * @param sharkName give it a name
+     */
+    public SharkPeerFS(CharSequence sharkName, CharSequence rootFolder) {
+        super(sharkName);
         this.rootFolder = rootFolder;
     }
 
@@ -69,7 +79,7 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
         }
 
         Log.writeLog(this, "create component");
-        SharkComponent component = componentFactory.getComponent();
+        SharkComponent component = componentFactory.getComponent(this);
 
         for(CharSequence format : componentFormats) {
             Log.writeLog(this, "added component that supports format " + format);
@@ -107,8 +117,8 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
         throw new SharkException("no component found with format(s) " + sb.toString());
     }
 
-    protected ASAPPeerFS createASAPPeer() throws IOException, ASAPException {
-        return new ASAPPeerFS(this.owner, this.rootFolder, this.components.keySet());
+    protected ASAPPeerFS createASAPPeer(CharSequence peerID) throws IOException, ASAPException {
+        return new ASAPPeerFS(peerID, this.rootFolder, this.components.keySet());
     }
 
     public Set<CharSequence> getSupportedFormats() {
@@ -116,13 +126,13 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
     }
 
     @Override
-    public void start() throws SharkException {
+    public void start(CharSequence peerID) throws SharkException {
         if(this.status != SharkPeerStatus.NOT_INITIALIZED) {
             throw new SharkException("Shark Peer is already running");
         }
 
         try {
-            this.start(this.createASAPPeer());
+            this.start(this.createASAPPeer(peerID));
         } catch (IOException | ASAPException e) {
             e.printStackTrace();
             Log.writeLogErr(this, "could not start ASAP peer - fatal, give up");

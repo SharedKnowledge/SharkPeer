@@ -22,15 +22,15 @@ import java.util.Collection;
 import java.util.Date;
 
 public class SharkComponentTests {
-    public static final CharSequence ALICE = "Alice";
-    public static final CharSequence BOB = "Bob";
+    public static final CharSequence ALICE_ID = "Alice";
+    public static final CharSequence BOB_ID = "Bob";
 
     public static final CharSequence CLARA = "Clara";
 
     public static final CharSequence DAVE = "Dave";
     static final CharSequence ROOTFOLDER = "sharkComponent";
-    public static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE;
-    public static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB;
+    public static final CharSequence ALICE_ROOTFOLDER = ROOTFOLDER + "/" + ALICE_ID;
+    public static final CharSequence BOB_ROOTFOLDER = ROOTFOLDER + "/" + BOB_ID;
     public static final CharSequence CLARA_ROOTFOLDER = ROOTFOLDER + "/" + CLARA;
 
     public static final CharSequence DAVE_ROOTFOLDER = ROOTFOLDER + "/" + DAVE;
@@ -41,13 +41,13 @@ public class SharkComponentTests {
     public void usage1() throws SharkException, IOException, ASAPException {
         SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER); // clean previous version before
 
-        SharkPeerFS sPeer = new SharkPeerFS(ALICE, ALICE_ROOTFOLDER);
+        SharkPeerFS sPeer = new SharkPeerFS(ALICE_ROOTFOLDER);
         YourComponentFactory factory = new YourComponentFactory();
         Class facadeClass = YourComponent.class;
         sPeer.addComponent(factory, facadeClass);
 
         sPeer.getComponent(YourComponent.class);
-        sPeer.start();
+        sPeer.start(ALICE_ID);
     }
 
     @Test
@@ -67,25 +67,25 @@ public class SharkComponentTests {
         SharkTestPeerFS.removeFolder(folderName);
 
         System.out.println("alice uses folder " + folderName);
-        aliceSharkPeer = new SharkTestPeerFS(ALICE, folderName);
+        aliceSharkPeer = new SharkTestPeerFS(folderName);
         aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
         aliceListener = new ExampleYourComponentListener();
         aliceComponent.subscribeYourComponentListener(aliceListener);
 
         // Start alice peer
-        aliceSharkPeer.start();
+        aliceSharkPeer.start(ALICE_ID);
 
         ////////////// setup Bob
         folderName = net.sharksystem.utils.testsupport.TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
         SharkTestPeerFS.removeFolder(folderName);
         System.out.println("bob uses folder " + folderName);
-        bobSharkPeer = new SharkTestPeerFS(BOB, folderName);
+        bobSharkPeer = new SharkTestPeerFS(folderName);
         bobComponent = TestHelper.setupComponent(bobSharkPeer);
         bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
         // Start bob peer
-        bobSharkPeer.start();
+        bobSharkPeer.start(BOB_ID);
 
     }
 
@@ -158,21 +158,21 @@ public class SharkComponentTests {
     public void hubDescriptions() throws SharkException, IOException {
         ////////////// setup Alice
         SharkTestPeerFS.removeFolder(ALICE_ROOTFOLDER);
-        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
+        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE_ROOTFOLDER);
         YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
 
         // Start alice peer
-        aliceSharkPeer.start();
+        aliceSharkPeer.start(ALICE_ID);
 
         aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_A", 1234));
         aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_B", 1235));
         aliceSharkPeer.addHubDescription(new TCPHubConnectorDescriptionImpl("exampleHost_C", 1265));
 
         // relaunch
-        aliceSharkPeer = new SharkTestPeerFS(ALICE, ALICE_ROOTFOLDER);
+        aliceSharkPeer = new SharkTestPeerFS(ALICE_ROOTFOLDER);
         aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
 
-        aliceSharkPeer.start();
+        aliceSharkPeer.start(ALICE_ID);
 
         aliceSharkPeer.getHubDescription(0);
         aliceSharkPeer.getHubDescription(1);
@@ -200,21 +200,21 @@ public class SharkComponentTests {
 
         //////////////////////////////// setup Alice
         SharkTestPeerFS.removeFolder(aliceFolder);
-        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(ALICE, aliceFolder);
+        SharkTestPeerFS aliceSharkPeer = new SharkTestPeerFS(aliceFolder);
         YourComponent aliceComponent = TestHelper.setupComponent(aliceSharkPeer);
         // start alice peer
-        aliceSharkPeer.start();
+        aliceSharkPeer.start(ALICE_ID);
 
         // setup Bob
         ////////////// setup Bob
         SharkTestPeerFS.removeFolder(bobFolder);
-        SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(BOB, bobFolder);
+        SharkTestPeerFS bobSharkPeer = new SharkTestPeerFS(bobFolder);
         YourComponent bobComponent = TestHelper.setupComponent(bobSharkPeer);
         ExampleYourComponentListener bobListener = new ExampleYourComponentListener();
         bobComponent.subscribeYourComponentListener(bobListener);
 
         // Start bob peer
-        bobSharkPeer.start();
+        bobSharkPeer.start(BOB_ID);
 
         // Alice sends a message
         aliceComponent.sendBroadcastMessage(YOUR_URI, "Hi there");
@@ -222,7 +222,7 @@ public class SharkComponentTests {
         ///////////////////// connect to hub - Alice
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl aliceEncounterManager =
-                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS(),ALICE);
+                new ASAPEncounterManagerImpl(aliceSharkPeer.getASAPTestPeerFS(), ALICE_ID);
 
         // setup hub manager
         ASAPHubManager aliceHubManager = ASAPHubManagerImpl.createASAPHubManager(aliceEncounterManager);
@@ -235,9 +235,9 @@ public class SharkComponentTests {
         // setup encounter manager with a connection handler
         ASAPEncounterManagerImpl bobEncounterManager =
 
-                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(),BOB);
+                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(), BOB_ID);
 
-                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(), BOB);
+                new ASAPEncounterManagerImpl(bobSharkPeer.getASAPTestPeerFS(), BOB_ID);
 
 
         // setup hub manager

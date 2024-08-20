@@ -65,25 +65,25 @@ public class TestHelper {
         System.out.println("test number == " + testNumber);
         String aliceFolderName = aliceFolder + "_" + testNumber;
         SharkTestPeerFS.removeFolder(aliceFolderName);
-        this.alicePeer = new SharkTestPeerFS(ALICE_ID, aliceFolderName);
+        this.alicePeer = new SharkTestPeerFS(aliceFolderName);
         TestHelper.setupComponent(this.alicePeer);
 
         String bobFolderName = bobFolder + "_" + testNumber;
         SharkTestPeerFS.removeFolder(bobFolderName);
-        this.bobPeer = new SharkTestPeerFS(BOB_ID, bobFolderName);
+        this.bobPeer = new SharkTestPeerFS(bobFolderName);
         TestHelper.setupComponent(this.bobPeer);
 
         String claraFolderName = claraFolder + "_" + testNumber;
         SharkTestPeerFS.removeFolder(claraFolderName);
-        this.claraPeer = new SharkTestPeerFS(CLARA_ID, claraFolderName);
+        this.claraPeer = new SharkTestPeerFS(claraFolderName);
         TestHelper.setupComponent(this.claraPeer);
 
         testNumber++;
 
         // start peers
-        this.alicePeer.start();
-        this.bobPeer.start();
-        this.claraPeer.start();
+        this.alicePeer.start(ALICE_ID);
+        this.bobPeer.start(BOB_ID);
+        this.claraPeer.start(CLARA_ID);
 
         this.aliceComponent = (YourComponent) this.alicePeer.getComponent(YourComponent.class);
         this.bobComponent = (YourComponent) this.bobPeer.getComponent(YourComponent.class);

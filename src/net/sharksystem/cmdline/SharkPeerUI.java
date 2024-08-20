@@ -80,8 +80,8 @@ public class SharkPeerUI {
         // set up peers
         File rootFolder = new File(PEERS_ROOT_FOLDER + "/" + peerName);
 
-        this.sharkPeer = new SharkPeerFS(peerName, rootFolder.getAbsolutePath());
-        this.sharkPeer.start();
+        this.sharkPeer = new SharkPeerFS(rootFolder.getAbsolutePath());
+        this.sharkPeer.start(peerName);
         System.out.println("SharkPeer " + peerName + " running (folder: " + rootFolder.getAbsolutePath() + ")");
     }
 

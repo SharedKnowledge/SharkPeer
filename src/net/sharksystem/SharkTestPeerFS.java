@@ -7,12 +7,24 @@ import net.sharksystem.fs.FSUtils;
 import java.io.IOException;
 
 public class SharkTestPeerFS extends SharkPeerFS {
-    public SharkTestPeerFS(CharSequence owner, CharSequence rootFolder) {
-        super(owner, rootFolder);
+    /**
+     * Create a not specifically named Shark peer
+     * @param rootFolder
+     */
+    public SharkTestPeerFS(CharSequence rootFolder) {
+        super(rootFolder);
     }
 
-    protected ASAPTestPeerFS createASAPPeer() throws IOException, ASAPException {
-        return new ASAPTestPeerFS(this.owner, this.rootFolder, this.components.keySet());
+    /**
+     * Create a named Shark peer
+     * @param rootFolder
+     */
+    public SharkTestPeerFS(CharSequence sharkName, CharSequence rootFolder) {
+        super(sharkName, rootFolder);
+    }
+
+    protected ASAPTestPeerFS createASAPPeer(CharSequence peerID) throws IOException, ASAPException {
+        return new ASAPTestPeerFS(peerID, this.rootFolder, this.components.keySet());
     }
 
     public ASAPTestPeerFS getASAPTestPeerFS() throws SharkException {

@@ -14,6 +14,7 @@ import java.util.Set;
  */
 public interface SharkPeerBasic {
     CharSequence getPeerID() throws SharkException;
+    CharSequence getSharkPeerName();
 
     void addHubDescription(HubConnectorDescription hubConnectorDescription);
 

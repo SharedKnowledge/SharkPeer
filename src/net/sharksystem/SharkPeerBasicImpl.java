@@ -13,6 +13,7 @@ import java.util.*;
 
 public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChangesListener {
     private ASAPPeer asapPeer;
+    private CharSequence sharkName;
 
     public SharkPeerBasicImpl() { }
 
@@ -21,13 +22,30 @@ public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChange
     }
 
     /**
-     * @deprecated An ASAPPeer should be presented when we start() a SharkPeer and
-     * <b>not during</b> its construction
+     * Create the Shark peer as a shell - no asap peer inside yet
+     * @param sharkName
+     */
+    public SharkPeerBasicImpl(CharSequence sharkName) {
+        this.sharkName = sharkName;
+    }
+
+    /**
+     * Create a Shark peer with a name and an asap peer inside. System is apparently running.
+     * @param sharkName
+     * @param asapPeer
+     */
+    public SharkPeerBasicImpl(CharSequence sharkName, ASAPPeer asapPeer) {
+        this.sharkName = sharkName;
+        this.asapPeer = asapPeer;
+        this.init();
+    }
+
+    /**
+     * Create a Shark peer (without a specific name) with its ASAP peer.
      * @param asapPeer
      */
     public SharkPeerBasicImpl(ASAPPeer asapPeer) {
-        this.asapPeer = asapPeer;
-        this.init();
+        this(SharkPeer.ANONYMOUS_SHARK_NAME, asapPeer);
     }
 
     protected void setASAPPeer(ASAPPeer asapPeer) {
@@ -43,6 +61,11 @@ public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChange
     @Override
     public CharSequence getPeerID() throws SharkException {
         return this.getASAPPeer().getPeerID();
+    }
+
+    @Override
+    public CharSequence getSharkPeerName() {
+        return this.sharkName;
     }
 
 
