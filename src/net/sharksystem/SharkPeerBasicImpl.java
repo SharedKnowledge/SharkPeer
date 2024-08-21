@@ -185,25 +185,6 @@ public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChange
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                              extra data                                                    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException {
-        if(this.asapPeer == null) {
-            throw new SharkException("peer is not yet launched - initialize your shark system");
-        }
-        this.asapPeer.putExtra(key, value);
-    }
-
-    @Override
-    public byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException {
-        if(this.asapPeer == null) {
-            throw new SharkException("peer is not yet launched - initialize your shark system");
-        }
-        return this.asapPeer.getExtra(key);
-    }
-
     private Set<SharkPeerEncounterChangedListener> sharkPeerEncounterChangedListenerSet = new HashSet<>();
     boolean listenEnvironmentChange = false;
     @Override

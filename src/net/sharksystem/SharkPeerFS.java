@@ -1,12 +1,15 @@
 package net.sharksystem;
 
 import net.sharksystem.asap.*;
+import net.sharksystem.fs.ExtraData;
+import net.sharksystem.fs.ExtraDataFS;
 import net.sharksystem.utils.Log;
 
 import java.io.IOException;
 import java.util.*;
 
 public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
+    private static final CharSequence SHARK_PEER_EXTRA_DATA_FILE_NAME = ".sharkPeerExtraData";
     protected final CharSequence rootFolder;
     private HashMap<CharSequence, SharkComponentFactory> factories = new HashMap<>();
     protected HashMap<CharSequence, SharkComponent> components = new HashMap<>();
@@ -187,5 +190,31 @@ public class SharkPeerFS extends SharkPeerBasicImpl implements SharkPeer {
     @Override
     public Set<CharSequence> getFormats() {
         return this.components.keySet();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                              extra data                                                    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private ExtraDataFS extraDataFS;
+
+    private ExtraDataFS getExtraDataFS() throws SharkException, IOException {
+        if(this.extraDataFS == null) {
+            this.extraDataFS = new ExtraDataFS(this.rootFolder, SHARK_PEER_EXTRA_DATA_FILE_NAME);
+        }
+        return this.extraDataFS;
+    }
+
+    @Override
+    public void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException {
+        this.getExtraDataFS().putExtra(key, value);
+    }
+
+    @Override
+    public byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException {
+        return this.getExtraDataFS().getExtra(key);
+    }
+
+    public ExtraData getSharkPeerExtraData() throws SharkException, IOException {
+        return this.getExtraDataFS();
     }
 }

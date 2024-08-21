@@ -1,7 +1,10 @@
 package net.sharksystem;
 
+import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.ASAPPeer;
+import net.sharksystem.fs.ExtraData;
 
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -80,8 +83,19 @@ public interface SharkPeer extends SharkPeerBasic {
     SharkPeerStatus getStatus();
 
     /**
-     * Get access to connection manager
-     * @return connection manager
-     * @throws SharkException no manager present, e.g. because system is not yet launched
+     * Make a value persistent with key
+     * @param key
+     * @param value
      */
+    void putExtra(CharSequence key, byte[] value) throws IOException, SharkException, ASAPException;
+
+    /**
+     * Return a value. Throws an exception if not set
+     * @param key
+     * @throws ASAPException key never used in putExtra
+     */
+    byte[] getExtra(CharSequence key) throws ASAPException, IOException, SharkException;
+
+    ExtraData getSharkPeerExtraData() throws SharkException, IOException;
+
 }
