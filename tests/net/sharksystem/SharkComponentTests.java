@@ -9,6 +9,8 @@ import net.sharksystem.hub.peerside.ASAPHubManagerImpl;
 import net.sharksystem.hub.peerside.HubConnectorDescription;
 import net.sharksystem.hub.peerside.TCPHubConnectorDescriptionImpl;
 import java.net.Socket;
+
+import net.sharksystem.testhelper.SharkPeerTestHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -63,7 +65,7 @@ public class SharkComponentTests {
 
     private void setUpAndStartAliceAndBob() throws SharkException {
         ////////////// setup Alice
-        String folderName = net.sharksystem.utils.testsupport.TestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
+        String folderName = SharkPeerTestHelper.getUniqueFolderName(ALICE_ROOTFOLDER.toString());
         SharkTestPeerFS.removeFolder(folderName);
 
         System.out.println("alice uses folder " + folderName);
@@ -76,7 +78,7 @@ public class SharkComponentTests {
         aliceSharkPeer.start(ALICE_ID);
 
         ////////////// setup Bob
-        folderName = net.sharksystem.utils.testsupport.TestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
+        folderName = SharkPeerTestHelper.getUniqueFolderName(BOB_ROOTFOLDER.toString());
         SharkTestPeerFS.removeFolder(folderName);
         System.out.println("bob uses folder " + folderName);
         bobSharkPeer = new SharkTestPeerFS(folderName);

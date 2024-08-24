@@ -224,6 +224,7 @@ public class SharkPeerBasicImpl implements SharkPeerBasic, ASAPEnvironmentChange
         // check what changed
         Set<CharSequence> lostIDs;
         Set<CharSequence> addedIDs = new HashSet<>();
+        Log.writeLog(this, "BREAK 1", "ConcurrentModification");
 
         for(CharSequence idFromNewList : newEncounterList) {
             if(!this.previousEncounterList.contains(idFromNewList)) { // it is new

@@ -24,5 +24,11 @@ package net.sharksystem;
  * sharkPeer.getPeerID() will work at that moment.
  */
 public interface SharkComponentFactory {
-    SharkComponent getComponent(SharkPeer sharkPeer);
+    /**
+     * Get a component object (most probably a singleton)
+     * @param sharkPeer
+     * @return
+     * @throws SharkException if something went wrong - problem is documented in this exception
+     */
+    SharkComponent getComponent(SharkPeer sharkPeer) throws SharkException;
 }
