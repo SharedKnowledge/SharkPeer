@@ -2,6 +2,7 @@ package net.sharksystem;
 
 import net.sharksystem.asap.ASAPException;
 import net.sharksystem.asap.apps.testsupport.ASAPTestPeerFS;
+import net.sharksystem.asap.crypto.InMemoASAPKeyStore;
 import net.sharksystem.fs.FSUtils;
 
 import java.io.IOException;
@@ -24,7 +25,10 @@ public class SharkTestPeerFS extends SharkPeerFS {
     }
 
     protected ASAPTestPeerFS createASAPPeer(CharSequence peerID) throws IOException, ASAPException {
-        return new ASAPTestPeerFS(peerID, this.rootFolder, this.components.keySet());
+        ASAPTestPeerFS testPeer = new ASAPTestPeerFS(peerID, this.rootFolder, this.components.keySet());
+        // add key store
+        testPeer.setASAPKeyStore(new InMemoASAPKeyStore(peerID));
+        return testPeer;
     }
 
     public ASAPTestPeerFS getASAPTestPeerFS() throws SharkException {

@@ -59,6 +59,8 @@ public interface SharkPeer extends SharkPeerBasic {
      * Start the Shark peer. An ASAP peer will be launched with listening to all format from all
      * components. Components can neither be added nor withdrawn after launch.
      * @throws SharkException Exception can only be caused by ASAP peer launch
+     * @deprecated only for tests acceptable. A blank asap peer will be created; no keystore would be set.
+     * No cryptography whatsoever would function.
      */
     void start(CharSequence peerID) throws SharkException;
 
